@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+    android:background="@drawable/siginbackground">
+    <EditText
+        android:id="@+id/fullNameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Full Name"
+        android:layout_margin="16dp" />
+
+    <!-- Email EditText -->
+    <EditText
+        android:id="@+id/emailEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:layout_below="@id/fullNameEditText"
+        android:layout_margin="16dp"
+        android:inputType="textEmailAddress" />
+
+    <!-- Password EditText -->
+    <EditText
+        android:id="@+id/passwordEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:layout_below="@id/emailEditText"
+        android:layout_margin="16dp"
+        android:inputType="textPassword" />
+
+    <!-- Birth Date EditText -->
+    <EditText
+        android:id="@+id/birthDateEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Birth Date (DD/MM/YYYY)"
+        android:layout_below="@id/passwordEditText"
+        android:layout_margin="16dp"
+        android:inputType="date" />
+
+    <!-- Pesel Number EditText -->
+    <EditText
+        android:id="@+id/peselEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Pesel Number"
+        android:layout_below="@id/birthDateEditText"
+        android:layout_margin="16dp"
+        android:inputType="number" />
+
+    <!-- Register Button -->
+    <Button
+        android:id="@+id/registerButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        android:layout_below="@id/peselEditText"
+        android:layout_margin="16dp" />
+</LinearLayout>
