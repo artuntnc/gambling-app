@@ -33,7 +33,7 @@ class SignInActivity : AppCompatActivity() {
 
             // User verification process
             if (email == "test@example.com" && password == "password") {
-                val intent = Intent(this, GameMenuActivity::class.java) // I didnt created GameMenuActivity because of that it has error
+                val intent = Intent(this, GameMenuActivity::class.java) // we didnt create game menu yet
                 startActivity(intent)
                 finish()
             } else {

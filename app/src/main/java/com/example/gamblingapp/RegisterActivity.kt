@@ -19,7 +19,7 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        // Viewleri tanımla
+        // Defination of the all views
         fullNameEditText = findViewById(R.id.fullNameEditText)
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
@@ -34,7 +34,7 @@ class RegisterActivity : AppCompatActivity() {
             val birthDate = birthDateEditText.text.toString()
             val pesel = peselEditText.text.toString()
 
-            // Tüm alanların doldurulup doldurulmadığını kontrol et
+            // Check the all fields are filled or not
             if (fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank() && birthDate.isNotBlank() && pesel.isNotBlank()) {
                 Toast.makeText(this, "Registered Successfully", Toast.LENGTH_SHORT).show()
                 finish() // Kayıt tamamlanınca geri dön
