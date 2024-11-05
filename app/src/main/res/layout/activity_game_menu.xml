@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/balanceTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="$1000"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp" />
+
+    <!-- Setting Icons-->
+    <ImageView
+        android:id="@+id/settingsIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_settings"
+        android:contentDescription="@string/ic_settings"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <GridLayout
+        android:id="@+id/gameGrid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:rowCount="3"
+        android:padding="16dp"/>
+
+    <!-- Roulette game -->
+    <ImageView
+        android:id="@+id/rouletteGame"
+        android:layout_width="229dp"
+        android:layout_height="229dp"
+        android:src="@drawable/roulet" />
+
+    <!-- Blackjack game -->
+    <ImageView
+        android:id="@+id/blackjackGame"
+        android:layout_width="229dp"
+        android:layout_height="229dp"
+        android:src="@drawable/blackjack" />
+
+    <!-- Slot game -->
+    <ImageView
+        android:id="@+id/slotGame"
+        android:layout_width="229dp"
+        android:layout_height="229dp"
+        android:src="@drawable/slotmachine" />
+
+    <!-- dice game-->
+    <ImageView
+        android:id="@+id/diceGame"
+        android:layout_width="229dp"
+        android:layout_height="229dp"
+        android:src="@drawable/dice" />
+
+    <!-- MoreComming section -->
+    <ImageView
+        android:id="@+id/moreComing"
+        android:layout_width="229dp"
+        android:layout_height="229dp"
+        android:src="@drawable/comingsoon" />
+
+
+
+</LinearLayout>
