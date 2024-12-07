@@ -1,0 +1,58 @@
+# --- macOS Specific Files ---
+.DS_Store
+.AppleDouble
+.LSOverride
+*.Spotlight-V100
+.Trashes
+*.swp
+*~
+
+# --- Windows Specific Files ---
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# --- Android Studio Specific ---
+# Android Studio project and workspace files
+.idea/
+*.iml
+
+# Gradle-specific files
+.gradle/
+build/
+!gradle-wrapper.jar
+.gradle-cache/
+
+# Local configuration
+local.properties
+*.keystore
+*.jks
+
+# Compiled code
+*.class
+*.dex
+
+# Log and crash files
+*.log
+*.crash
+
+# Generated files
+/build/
+generated/
+
+# Proguard mappings
+mapping.txt
+output.json
+
+# --- General Editor Files ---
+*~
+*.swp
+*.swo
+
+# --- Miscellaneous ---
+*.tmp
+*.temp
+*.bak
+*.obj
+*.o
+*.out
