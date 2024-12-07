@@ -1,5 +1,7 @@
 package com.example.gamblingapp
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -32,8 +34,10 @@ class SignInActivity : AppCompatActivity() {
             val password = passwordEditText.text.toString()
 
             // User verification process
-            if (email == "test@example.com" && password == "password") {
-                val intent = Intent(this, GameMenuActivity::class.java) // we didnt create game menu yet
+            // i made 2 admin accounts
+            if (email == "artun.tonguc@example.com" && password == "password" ||
+                email=="kacper.kubiak@example.com" && password == "password") {
+                val intent = Intent(this, GameMenuActivity::class.java)
                 startActivity(intent)
                 finish()
             } else {
@@ -52,5 +56,18 @@ class SignInActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
+        val sharedPreferences: SharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val isFirstLogin = sharedPreferences.getBoolean("isFirstLogin",true)
+
+        if (isFirstLogin){
+            val editor = sharedPreferences.edit()
+            editor.putInt("userBalance",1000)
+            editor.putBoolean("isFirstLogin",false)
+            editor.apply()
+
+
+            Toast.makeText(this,"Welcome! Your balance is 1000$",Toast.LENGTH_SHORT).show()
+        }
+
     }
 }

@@ -1,5 +1,7 @@
 package com.example.gamblingapp
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,11 +19,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+
+        //Getting the user balance from SharedPreferences
+
+        val sharedPreferences: SharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val userBalance = sharedPreferences.getInt("userBalance", 0)
+
+
         setContent {
             GamblingAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+
+                    BalanceScreen(
+                        balance =  userBalance,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -31,17 +42,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun BalanceScreen(balance:Int,modifier: Modifier = Modifier){
     Text(
-        text = "Hello $name!",
+        text = "Balance: $$balance",
         modifier = modifier
     )
 }
-
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun GreetingPreview() {
-    GamblingAppTheme {
-        Greeting("Android")
-    }
+fun BalanceScreenPreview() {
+    GamblingAppTheme { BalanceScreen(1000) }
 }
+

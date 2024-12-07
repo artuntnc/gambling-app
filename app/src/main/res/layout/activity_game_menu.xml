@@ -1,75 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@drawable/background">
+
+
+    <!-- Balance text right top corner -->
     <TextView
         android:id="@+id/balanceTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="$1000"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp" />
+        android:textSize="40sp"
+        android:textColor="@color/black"
 
-    <!-- Setting Icons-->
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Settings icon left top corner -->
     <ImageView
         android:id="@+id/settingsIcon"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:src="@drawable/ic_settings"
-        android:contentDescription="@string/ic_settings"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
+        android:src="@drawable/set_ic"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp" />
 
-    <GridLayout
-        android:id="@+id/gameGrid"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:rowCount="3"
-        android:padding="16dp"/>
-
-    <!-- Roulette game -->
+    <!-- Roulette image  below the setting -->
     <ImageView
         android:id="@+id/rouletteGame"
-        android:layout_width="229dp"
-        android:layout_height="229dp"
-        android:src="@drawable/roulet" />
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/roulet"
+        app:layout_constraintTop_toBottomOf="@id/settingsIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
 
-    <!-- Blackjack game -->
+    <!-- Blackjack image next to roulette -->
     <ImageView
         android:id="@+id/blackjackGame"
-        android:layout_width="229dp"
-        android:layout_height="229dp"
-        android:src="@drawable/blackjack" />
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/blackjack"
+        app:layout_constraintTop_toTopOf="@id/rouletteGame"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp" />
 
-    <!-- Slot game -->
+    <!-- Slot image  below the roulette -->
     <ImageView
         android:id="@+id/slotGame"
-        android:layout_width="229dp"
-        android:layout_height="229dp"
-        android:src="@drawable/slotmachine" />
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/slotmachinenew"
+        app:layout_constraintTop_toBottomOf="@id/rouletteGame"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
 
-    <!-- dice game-->
+        />
+
+    <!-- Dice image next to slot -->
     <ImageView
         android:id="@+id/diceGame"
-        android:layout_width="229dp"
-        android:layout_height="229dp"
-        android:src="@drawable/dice" />
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/dice"
+        app:layout_constraintTop_toTopOf="@id/slotGame"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp" />
 
-    <!-- MoreComming section -->
+    <!-- More coming image  -->
     <ImageView
         android:id="@+id/moreComing"
-        android:layout_width="229dp"
-        android:layout_height="229dp"
-        android:src="@drawable/comingsoon" />
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:src="@drawable/comingsoon"
+        app:layout_constraintTop_toBottomOf="@id/slotGame"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" />
 
-
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

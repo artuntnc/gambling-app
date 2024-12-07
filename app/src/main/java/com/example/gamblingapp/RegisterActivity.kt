@@ -1,5 +1,6 @@
 package com.example.gamblingapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -36,8 +37,11 @@ class RegisterActivity : AppCompatActivity() {
 
             // Check the all fields are filled or not
             if (fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank() && birthDate.isNotBlank() && pesel.isNotBlank()) {
-                Toast.makeText(this, "Registered Successfully", Toast.LENGTH_SHORT).show()
-                finish() // Kayıt tamamlanınca geri dön
+                Toast.makeText(this, "Registered Successfully.", Toast.LENGTH_SHORT).show()
+                 // If u registered succesfully turn back to signin screen
+                val intent = Intent(this, SignInActivity::class.java)
+                startActivity(intent)
+                finish()
             } else {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             }
