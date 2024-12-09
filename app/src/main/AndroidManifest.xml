@@ -28,6 +28,7 @@
         <activity android:name=".RegisterActivity" />
 
         <activity android:name=".GameMenuActivity" />
+        <activity android:name=".RouletteActivity" />
 
 
         <activity

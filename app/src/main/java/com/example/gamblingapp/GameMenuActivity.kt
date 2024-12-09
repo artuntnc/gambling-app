@@ -8,23 +8,34 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
+
 //In this part I added the click events on the images in the menu
 //We need to create settings class
 //We need to creat roulette class
 //Im not sure about what we gona add dice, slot and more games section because of that
 //im doing the same staff which i did with settings and roulette part
-
 class GameMenuActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game_menu)
+
+        // Find the roulette game ImageView
+        val rouletteGame = findViewById<ImageView>(R.id.rouletteGame)
+
+        // Set an OnClickListener for the roulette game ImageView
+        rouletteGame.setOnClickListener {
+            // Start the RouletteActivity when clicked
+            val intent = Intent(this, RouletteActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
 
+
         //Settings part
 
-
+ /*
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
         settingsIcon.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -41,6 +52,7 @@ class GameMenuActivity : AppCompatActivity() {
             val intent = Intent(this, RouletteActivity::class.java)
             startActivity(intent)
         }
+}
 
         //Dice part
 
@@ -66,3 +78,5 @@ class GameMenuActivity : AppCompatActivity() {
 
 
 }
+
+  */
