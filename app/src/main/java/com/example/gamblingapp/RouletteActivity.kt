@@ -1,48 +1,46 @@
 package com.example.gamblingapp
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.animation.Animation
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.RotateAnimation
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import kotlin.random.Random
 
 class RouletteActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
     private var balance: Int = 0
-    //Its checking the last 5 result
     private val lastFiveResults = mutableListOf<String>()
 
-    // Roulette wheel number order and corresponding colors
-    private val numberOrder = listOf(
-        Pair(0, "Green"), Pair(32, "Red"), Pair(15, "Black"), Pair(19, "Red"), Pair(4, "Black"),
-        Pair(21, "Red"), Pair(2, "Black"), Pair(25, "Red"), Pair(17, "Black"), Pair(34, "Red"),
-        Pair(6, "Black"), Pair(27, "Red"), Pair(13, "Black"), Pair(36, "Red"), Pair(11, "Black"),
-        Pair(30, "Red"), Pair(8, "Black"), Pair(23, "Red"), Pair(10, "Black"), Pair(5, "Red"),
-        Pair(24, "Black"), Pair(16, "Red"), Pair(33, "Black"), Pair(1, "Red"), Pair(20, "Black"),
-        Pair(14, "Red"), Pair(31, "Black"), Pair(9, "Red"), Pair(22, "Black"), Pair(18, "Red"),
-        Pair(29, "Black"), Pair(7, "Red"), Pair(28, "Black"), Pair(12, "Red"), Pair(35, "Black"),
-        Pair(3, "Red"), Pair(26, "Black"),
+    // Sectors of the wheel
+    private val sectors = arrayOf(
+        "32 red", "15 black", "19 red", "4 black", "21 red", "2 black", "25 red", "17 black", "34 red",
+        "6 black", "27 red", "13 black", "36 red", "11 black", "30 red", "8 black", "23 red", "10 black",
+        "5 red", "24 black", "16 red", "33 black", "1 red", "20 black", "14 red", "31 black", "9 red",
+        "22 black", "18 red", "29 black", "7 red", "28 black", "12 red", "35 black", "3 red", "26 black", "zero"
     )
 
-    // Degrees per number for each sector on the roulette wheel but idk why it doesnt show me the
-    //wrong number
-    private val degreesPerNumber = 360f / numberOrder.size
+    private var degree = 0
+    private var degreeOld = 0
+    private val random = Random
+    private val halfSector = 360f / 37f / 2f
+
+    private var selectedColor: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_roulette)
 
+        // SharedPreferences setup
         sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        balance = sharedPreferences.getInt("userBalance", 0)
+        balance = sharedPreferences.getInt("userBalance", 1000) // Default balance 1000
 
-        // UI elements buttons etc...
-
+        // Bind UI components
+        val wheel: ImageView = findViewById(R.id.wheel)
         val spinButton: Button = findViewById(R.id.spinButton)
         val betAmountInput: EditText = findViewById(R.id.betAmount)
         val redButton: Button = findViewById(R.id.redButton)
@@ -52,90 +50,89 @@ class RouletteActivity : AppCompatActivity() {
         val lastResultsText: TextView = findViewById(R.id.lastResults)
         val balanceText: TextView = findViewById(R.id.balanceText)
 
-        var selectedColor: String? = null
+        balanceText.text = "Balance: $$balance"
 
-        // Color selection buttons for the game
-        redButton.setOnClickListener { selectedColor = "Red" }
-        blackButton.setOnClickListener { selectedColor = "Black" }
-        greenButton.setOnClickListener { selectedColor = "Green" }
+        // Color selection buttons
+        redButton.setOnClickListener { selectedColor = "red" }
+        blackButton.setOnClickListener { selectedColor = "black" }
+        greenButton.setOnClickListener { selectedColor = "green" }
 
-        // Spin button click handler
+        // Spin button
         spinButton.setOnClickListener {
-            // Validate bet amount it cant be 0 and less than the total balance
-            val betAmount = betAmountInput.text.toString().toIntOrNull()
-            if (betAmount == null || betAmount <= 0 || betAmount > balance || selectedColor == null) {
-                resultText.text = "Invalid input!"
+            val betAmountStr = betAmountInput.text.toString().trim()
+            val betAmount = betAmountStr.toIntOrNull()
+
+            // Validate bet amount
+            if (betAmountStr.isEmpty() || betAmount == null || betAmount <= 0) {
+                Toast.makeText(this, "Enter a valid numeric bet amount greater than 0.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (betAmount > balance) {
+                Toast.makeText(this, "Bet amount exceeds your current balance.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (selectedColor == null) {
+                Toast.makeText(this, "Please select a color to bet on.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            startRouletteSpinAnimation {
-                // Random select a number
-                val randomNumber = (0..36).random()
-                val color = getColorForNumber(randomNumber)
-
-                // Calculate winnings
+            // Start the spin
+            spin(wheel) { winningSector ->
+                val (number, color) = winningSector.split(" ")
                 val winnings = when {
-                    color == selectedColor && color == "Green" -> betAmount * 14
-                    color == selectedColor -> betAmount * 2
+                    selectedColor == color && color == "green" || number =="zero" -> betAmount * 14
+                    selectedColor == color -> betAmount * 2
                     else -> 0
                 }
-
-                // Updating the  balance
                 balance += winnings - betAmount
                 sharedPreferences.edit().putInt("userBalance", balance).apply()
 
-                // Updating results
-                resultText.text = "Number: $randomNumber, Color: $color"
-                lastFiveResults.add(0, "Number: $randomNumber, Color: $color")
+                // Update UI
+                resultText.text = "Result: $winningSector"
+                lastFiveResults.add(0, winningSector)
                 if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
-
-                // Showing last 5 results
                 lastResultsText.text = lastFiveResults.joinToString("\n")
-
-                // Updating balance display
                 balanceText.text = "Balance: $$balance"
             }
         }
     }
 
-    // Function to start the roulette spin animation
-    private fun startRouletteSpinAnimation(onAnimationEnd: () -> Unit) {
-        val wheel: ImageView = findViewById(R.id.wheel)
+    private fun spin(wheel: ImageView, onResult: (String) -> Unit) {
+        degreeOld = degree % 360
+        degree = random.nextInt(360) + 720
 
-        // Randomly select a number
-        val randomNumber = (0..36).random()
-
-        // Find the index of the selected number in the wheel
-        val numberIndex = numberOrder.indexOfFirst { it.first == randomNumber }
-        val targetDegree = numberIndex * degreesPerNumber //calculating the target degree
-
-        // Get the current rotation of the wheel
-        val currentRotation = wheel.rotation % 360f
-
-        val correctedTargetDegree = (360f * 5) + (360f - currentRotation + targetDegree) % 360f
-
-       //Objectanimator for rotating wheel
-        val rotateAnim = ObjectAnimator.ofFloat(wheel, "rotation", currentRotation, correctedTargetDegree)
-        rotateAnim.duration = 3000 // 3 seconds duration
-        rotateAnim.interpolator = AccelerateDecelerateInterpolator() // Smooth acceleration and deceleration
-
-        rotateAnim.addListener(object : android.animation.Animator.AnimatorListener {
-            override fun onAnimationStart(animation: android.animation.Animator) {}
-
-            override fun onAnimationEnd(animation: android.animation.Animator) {
-                onAnimationEnd()
+        val rotateAnim = RotateAnimation(
+            degreeOld.toFloat(), degree.toFloat(),
+            RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+            RotateAnimation.RELATIVE_TO_SELF, 0.5f
+        )
+        rotateAnim.duration = 3600
+        rotateAnim.fillAfter = true
+        rotateAnim.interpolator = DecelerateInterpolator()
+        rotateAnim.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {
+                // Clear result
             }
 
-            override fun onAnimationCancel(animation: android.animation.Animator) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                val sector = getSector(360 - (degree % 360))
+                onResult(sector)
+            }
 
-            override fun onAnimationRepeat(animation: android.animation.Animator) {}
+            override fun onAnimationRepeat(animation: Animation?) {}
         })
 
-        rotateAnim.start()
+        wheel.startAnimation(rotateAnim)
     }
 
-    // Function to return the color for a given number
-    private fun getColorForNumber(number: Int): String {
-        return numberOrder.firstOrNull { it.first == number }?.second ?: "Black"
+    private fun getSector(degrees: Int): String {
+        for (i in sectors.indices) {
+            val start = i * (360f / sectors.size)
+            val end = start + (360f / sectors.size)
+            if (degrees in start.toInt() until end.toInt()) {
+                return sectors[i]
+            }
+        }
+        return "zero"
     }
 }
