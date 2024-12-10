@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Gambling App</string>
+    <string name="loading_screen_progress">%s%%</string>
 </resources>

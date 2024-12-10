@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         //val sharedPreferences: SharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
         ///val userBalance = sharedPreferences.getInt("userBalance", 0)
 
-        //Nothing should be called from MainActivity, only the standard padding should be given
+        //Nothing should be called from MainActivity, only the standard padding should be given and size values
         setContent {
             GamblingAppTheme {
                 val layoutDirection = LocalLayoutDirection.current
