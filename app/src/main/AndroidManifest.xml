@@ -15,28 +15,13 @@
 
 
 
-        <activity android:name=".SplashActivity"
+        <activity android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.GamblingApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".SignInActivity" />
-        <activity android:name=".RegisterActivity" />
-
-        <activity android:name=".GameMenuActivity" />
-        <activity android:name=".RouletteActivity" />
-
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.GamblingApp">
-
         </activity>
     </application>
 

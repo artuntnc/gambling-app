@@ -9,7 +9,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 
 
-class SplashActivity : AppCompatActivity() {
+/*class SplashActivity : AppCompatActivity() {
 
     private lateinit var progressBar: ProgressBar
     private lateinit var progressText: TextView
@@ -43,4 +43,4 @@ class SplashActivity : AppCompatActivity() {
             finish()
         }.start()
     }
-}
+}*/

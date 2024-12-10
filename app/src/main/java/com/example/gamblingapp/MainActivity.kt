@@ -1,6 +1,6 @@
 package com.example.gamblingapp
 
-import android.content.Context
+import  android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.gamblingapp.ui.LoadingScreen
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
@@ -50,6 +52,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ReplyAppCompactPreview() {
+    GamblingAppTheme {
+        LoadingScreen()
     }
 }
 
