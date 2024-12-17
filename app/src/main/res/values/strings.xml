@@ -1,4 +1,19 @@
 <resources>
     <string name="app_name">Gambling App</string>
+
+    <string name="loading_screen">Login Screen</string>
+    <string name="login_screen">Login Screen</string>
+    <string name="register_screen">Register Screen</string>
+    <string name="game_menu_screen">Game Menu Screen</string>
+    <string name="settings_screen">Settings Screen</string>
+    <string name="roulette_screen">Roulette Screen</string>
+    <string name="dice_screen">Dice Screen</string>
+    <string name="blackjack_screen">Blackjack Screen</string>
+    <string name="slots_screen">Slots Screen</string>
+    <string name="money_screen">Money Screen</string>
+
+
+
+
     <string name="loading_screen_progress">%s%%</string>
 </resources>

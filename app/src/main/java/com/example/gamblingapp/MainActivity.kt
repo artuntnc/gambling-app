@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                                 .calculateEndPadding(layoutDirection)
                         )
                 ) {
-                    LoadingScreen()
+                    GamblingApp()
                 }
             }
         }
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ReplyAppCompactPreview() {
     GamblingAppTheme {
-        LoadingScreen()
+        GamblingApp()
     }
 }
 

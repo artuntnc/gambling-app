@@ -29,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,34 +54,42 @@ import androidx.core.content.res.ResourcesCompat
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 import kotlin.math.round
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlin.math.floor
 
 @Composable
 @OptIn(ExperimentalAnimationGraphicsApi::class)
 fun LoadingScreen(
-    modifier: Modifier = Modifier)
-{
-    var progress = 0f
+    loadingScreenViewModel: LoadingScreenViewModel = viewModel(),
+    onLoadingEnd: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val loadingScreenState by loadingScreenViewModel.uiState.collectAsState()
+
     val colors = listOf(colorResource(R.color.loading_screen_gradient_start),
         colorResource(R.color.loading_screen_gradient_center),
         colorResource(R.color.loading_screen_gradient_center2),
         colorResource(R.color.loading_screen_gradient_end))
 
-    val displayMetrics: DisplayMetrics by lazy { Resources.getSystem().displayMetrics }
-    val screenHeight = displayMetrics.heightPixels
+    val brushSize = 1600f
 
     val offset by rememberInfiniteTransition(label = "offset").animateFloat(
         initialValue = 0f,
-        targetValue = 3200f,
+        targetValue = brushSize*2,
         animationSpec = infiniteRepeatable(tween(10000, easing = LinearEasing)),
         label = "offset"
     )
+
+    if(loadingScreenViewModel.updateProgress())
+    {
+        //change screen to the sign in screen and configure the call based on whether we successfully loaded user info
+        onLoadingEnd()
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .drawWithCache {
-                val brushSize = 1600f
                 val brush = Brush.linearGradient(
                     colors = colors,
                     start = Offset(offset, offset),
@@ -108,13 +117,13 @@ fun LoadingScreen(
             contentDescription = "logo"
         )
         LinearProgressIndicator(
-            progress = { progress },
+            progress = { loadingScreenState.progress },
             modifier = Modifier
                 .height(6.dp)
                 .fillMaxWidth(0.95f)
         )
         Text(
-            text = stringResource(R.string.loading_screen_progress, progress.toString()),
+            text = stringResource(R.string.loading_screen_progress, floor(loadingScreenState.progress).toString()),
             modifier = modifier
                 .padding(8.dp)
         )
@@ -129,7 +138,7 @@ fun LoadingScreenPreview()
     {
         Surface()
         {
-            LoadingScreen()
+            LoadingScreen(onLoadingEnd = {})
         }
     }
 }
