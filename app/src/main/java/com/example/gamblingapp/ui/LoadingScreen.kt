@@ -83,6 +83,7 @@ fun LoadingScreen(
     if(loadingScreenViewModel.updateProgress())
     {
         //change screen to the sign in screen and configure the call based on whether we successfully loaded user info
+        //for now just goes to the login screen
         onLoadingEnd()
     }
 

@@ -10,10 +10,12 @@
     <string name="dice_screen">Dice Screen</string>
     <string name="blackjack_screen">Blackjack Screen</string>
     <string name="slots_screen">Slots Screen</string>
+    <string name="password_reset_screen">Password Reset Screen</string>
     <string name="money_screen">Money Screen</string>
 
-
-
-
     <string name="loading_screen_progress">%s%%</string>
+
+    <string name="roulette_last_result">Last result: %s$</string>
+
+
 </resources>
