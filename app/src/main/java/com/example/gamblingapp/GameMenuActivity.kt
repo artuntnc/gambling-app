@@ -29,7 +29,22 @@ class GameMenuActivity : AppCompatActivity() {
             val intent = Intent(this,RouletteActivity::class.java)
             startActivity(intent)
         }
+        val slotGame: ImageView = findViewById(R.id.slotGame)
+        slotGame.setOnClickListener {
+            val intent = Intent(this, SlotActivity::class.java)
+            startActivity(intent)
+
+        }
+        val blackJack: ImageView = findViewById(R.id.blackjackGame)
+        blackJack.setOnClickListener {
+            val intent = Intent(this, BlackjackActivity::class.java)
+            startActivity(intent)
+
+        }
     }
+
+
+
 }
 
 
@@ -57,11 +72,7 @@ class GameMenuActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        //Slot part
-        val slotGame: ImageView = findViewById(R.id.slotGame)
-        slotGame.setOnClickListener {
-            val intent = Intent(this, SlotActivity::class.java)
-            startActivity(intent)
+        )
 
         }
         //More coming section

@@ -1,0 +1,63 @@
+<!-- res/layout/activity_main.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@drawable/backgroundslotmachine">
+
+    <!-- Slot Machine Images -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:id="@+id/slot1"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:scaleType="fitCenter"
+            android:background="#FFFFFF"/>
+
+        <ImageView
+            android:id="@+id/slot2"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:scaleType="fitCenter"
+            android:background="#FFFFFF"/>
+
+        <ImageView
+            android:id="@+id/slot3"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:scaleType="fitCenter"
+            android:background="#FFFFFF"/>
+    </LinearLayout>
+
+    <!-- Spin Button -->
+    <Button
+        android:id="@+id/spinButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="SPIN"
+        android:background="#FFD700"
+        android:textColor="#000000"/>
+
+    <!-- Balance Display -->
+    <TextView
+        android:id="@+id/balanceText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Balance: $1000"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>

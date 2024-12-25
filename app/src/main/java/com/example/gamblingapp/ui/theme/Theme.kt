@@ -32,7 +32,19 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+@Composable
+fun BlackjackGameTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = androidx.compose.material3.Typography(),
+        content = content
+    )
+}
 @Composable
 fun GamblingAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -49,6 +61,7 @@ fun GamblingAppTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
 
     MaterialTheme(
         colorScheme = colorScheme,
