@@ -32,7 +32,7 @@
 
         <activity android:name=".SlotActivity"/>
         <activity android:name=".BlackjackActivity"/>
-        <activity android:name=".MoreComingActivity"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
