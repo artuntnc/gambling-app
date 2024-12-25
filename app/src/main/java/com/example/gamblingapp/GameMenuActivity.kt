@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 
@@ -41,6 +42,19 @@ class GameMenuActivity : AppCompatActivity() {
             startActivity(intent)
 
         }
+
+        //More coming section
+        val moreComing: ImageView = findViewById(R.id.moreComing)
+        moreComing.setOnClickListener {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Coming Soon!")
+            builder.setMessage("More games coming soon.")
+            builder.setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            builder.show()
+        }
+
     }
 
 
@@ -74,13 +88,6 @@ class GameMenuActivity : AppCompatActivity() {
 
         )
 
-        }
-        //More coming section
-        val moreComing: ImageView = findViewById(R.id.moreComing)
-        moreComing.setOnClickListener {
-            val intent = Intent(this, MoreComingActivity::class.java)
-            startActivity(intent)
-        }
 
 
 }
