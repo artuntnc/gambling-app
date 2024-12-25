@@ -43,6 +43,14 @@ class GameMenuActivity : AppCompatActivity() {
 
         }
 
+        //Dice part
+
+        val diceGame : ImageView = findViewById(R.id.diceGame)
+        diceGame.setOnClickListener {
+            val intent = Intent(this, DiceGameActivity::class.java)
+            startActivity(intent)
+        }
+
         //More coming section
         val moreComing: ImageView = findViewById(R.id.moreComing)
         moreComing.setOnClickListener {

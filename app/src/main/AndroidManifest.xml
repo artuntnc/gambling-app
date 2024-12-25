@@ -33,6 +33,8 @@
         <activity android:name=".SlotActivity"/>
         <activity android:name=".BlackjackActivity"/>
 
+        <activity android:name=".DiceGameActivity" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
