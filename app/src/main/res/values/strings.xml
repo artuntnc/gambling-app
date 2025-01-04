@@ -15,7 +15,8 @@
 
     <string name="loading_screen_progress">%s%%</string>
 
-    <string name="roulette_last_result">Last result: %s$</string>
+    <string name="roulette_last_result">Last result:</string>
+    <string name="roulette_result_money">%s$</string>
 
 
 </resources>

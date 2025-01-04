@@ -1,6 +1,10 @@
 package com.example.gamblingapp.ui
 
 import android.graphics.drawable.shapes.OvalShape
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,9 +25,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -38,8 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
-import org.intellij.lang.annotations.JdkConstants.FontStyle
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 
 @Composable
@@ -49,9 +57,13 @@ fun RouletteScreen(
     onRedClick: () -> Unit,
     onBlackClick: () -> Unit,
     onGreenClick: () -> Unit,
-    onSpinClick: (Int) -> Unit,
-    betText: String,
-    lastResultText: String = "100",
+    onSpinClick: () -> Unit,
+    onSpinFinished: (Float) -> Unit,
+    betText: Float,
+    lastResults: List<Float> = listOf(100f, 0f),
+    rouletteSpun: Boolean = false,
+    startDegree: Float = 0f,
+    targetDegree: Float = 360f,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -68,10 +80,19 @@ fun RouletteScreen(
             modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            Text(stringResource(R.string.roulette_last_result, lastResultText), color = Color.White)
+            Text(stringResource(R.string.roulette_last_result), color = Color.White, fontSize = 12.sp)
+            Column(
+                modifier = Modifier.height(100.dp)
+            )
+            {
+                for (result in lastResults)
+                {
+                    Text(stringResource(R.string.roulette_result_money, result), color = Color.White, fontSize = 12.sp)
+                }
+            }
         }
         TextField(
-            value = betText,
+            value = betText.toString(),
             label = { Text("Enter Your bet amount", color = Color.LightGray, fontSize = 24.sp) },
             textStyle = TextStyle(color = Color.DarkGray, fontSize = 24.sp),
             colors = TextFieldDefaults.colors(
@@ -82,11 +103,11 @@ fun RouletteScreen(
             ),
             onValueChange = onBetChange,
             singleLine = true,
-            isError = checkTextError(betText),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            isError = checkTextError(betText.toString()),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.None),
             modifier = Modifier
                 .fillMaxWidth(1f)
-                .padding(40.dp)
+                .padding(20.dp)
         )
         Image(
             contentScale = ContentScale.Fit,
@@ -95,6 +116,23 @@ fun RouletteScreen(
             modifier = modifier
                 .size(32.dp)
         )
+
+        var angle by remember { mutableStateOf(startDegree) }
+        val rotation = remember { Animatable(angle) }
+        LaunchedEffect(rouletteSpun)
+        {
+            if(rouletteSpun)
+            {
+                rotation.animateTo(
+                    targetValue = targetDegree,
+                    animationSpec = tween(3600, easing = LinearEasing)
+                ) {
+                    angle = value
+                }
+            }
+
+            onSpinFinished(angle)
+        }
         Image(
             contentScale = ContentScale.FillWidth,
             painter = painterResource(R.drawable.roulette_table),
@@ -102,6 +140,7 @@ fun RouletteScreen(
             modifier = modifier
                 .padding(bottom = 4.dp)
                 .fillMaxWidth()
+                .rotate(angle)
         )
         Row(
             modifier = modifier
@@ -142,11 +181,11 @@ fun RouletteScreen(
             }
         }
         Button(
-            onClick = onGreenClick,
+            onClick = onSpinClick,
             shape = RectangleShape,
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
             modifier = modifier
-                .padding(64.dp)
+                .padding(32.dp)
         ) {
             Text("SPIN", fontWeight = FontWeight.Bold)
         }
@@ -162,7 +201,7 @@ fun RouletteScreenPreview()
     {
         Surface()
         {
-            RouletteScreen({},{false},{},{}, {}, {}, "")
+            RouletteScreen({},{false},{},{}, {}, {}, {},0f)
         }
     }
 }

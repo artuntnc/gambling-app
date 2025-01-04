@@ -6,28 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,10 +31,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gamblingapp.ui.GamblingAppViewModel
+import com.example.gamblingapp.ui.GameMenuScreen
 import com.example.gamblingapp.ui.LoadingScreen
-import com.example.gamblingapp.ui.LoadingScreenViewModel
 import com.example.gamblingapp.ui.LoginScreen
 import com.example.gamblingapp.ui.RegisterScreen
+import com.example.gamblingapp.ui.RouletteScreen
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 enum class AppRoutes(@StringRes val title: Int)
@@ -103,11 +89,14 @@ fun GamblingApp(
     navController: NavHostController = rememberNavController()
 )
 {
-    //app state that controls the app
-    val appState by gamblingAppViewModel.appState.collectAsState()
 
     Scaffold(
     ) { innerPadding ->
+
+        //app state that controls the app
+        val appState by gamblingAppViewModel.appState.collectAsState()
+        val loginState by gamblingAppViewModel.loginState.collectAsState()
+        val registerState by gamblingAppViewModel.registerState.collectAsState()
 
         Column(
 
@@ -115,51 +104,100 @@ fun GamblingApp(
             //Check if bar should be hidden or not, hidden by default
             if(!appState.hideTopBar)
             {
-                GamblingAppBar({}, appState.money.toString() + "$")
+                GamblingAppBar({ navController.navigate(AppRoutes.Settings.name) }, appState.money.toString() + "$")
             }
 
             //component responsible for navigation in the app
             NavHost(
                 navController = navController,
-                startDestination = AppRoutes.Loading,
+                startDestination = AppRoutes.Loading.name,
                 modifier = Modifier.padding(innerPadding)
             )
             {
                 composable(route = AppRoutes.Loading.name) {
                     LoadingScreen(
-                        LoadingScreenViewModel(),
                         onLoadingEnd = { navController.navigate(AppRoutes.Login.name) },
                         modifier = Modifier
-                            .fillMaxSize()
                     )
                 }
                 composable(route = AppRoutes.Login.name) {
                     LoginScreen(
                         onValueChangePassword = { password -> gamblingAppViewModel.setLoginPassword(password) },
-                        onValueChangeEmail = { email -> gamblingAppViewModel.setLoginPassword(email) },
+                        onValueChangeEmail = { email -> gamblingAppViewModel.setLoginEmail(email) },
                         onRegister = {
                                         navController.navigate(AppRoutes.Register.name)
                                         gamblingAppViewModel.resetLogin()
                                      },
+                        onLogin = {
+                                        if(gamblingAppViewModel.getUserData())
+                                        {
+                                            gamblingAppViewModel.changeTopBarState()
+                                            navController.navigate(AppRoutes.GameMenu.name) {
+                                                popUpTo(AppRoutes.Login.name) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        }
+                                  },
                         onPasswordReset = {  }, //to implement a password reset mechanic
-                        checkEmailError = TODO(),
-                        checkPasswordError = TODO(),
-                        emailText = TODO(),
-                        passwordText = TODO(),
-                        modifier = TODO()
+                        checkEmailError = { email -> gamblingAppViewModel.checkIfInputIncorrect(email, GamblingAppViewModel.inputType.Email) },
+                        checkPasswordError = { password -> gamblingAppViewModel.checkIfInputIncorrect(password, GamblingAppViewModel.inputType.Password) },
+                        emailText = loginState.email,
+                        passwordText = loginState.password,
+                        modifier = Modifier
                     )
                 }
                 composable(route = AppRoutes.Register.name) {
-
+                    RegisterScreen(
+                        onValueChangeFullName = { password -> gamblingAppViewModel.setLoginPassword(password) },
+                        onValueChangePassword = { password -> gamblingAppViewModel.setLoginPassword(password) },
+                        onValueChangeEmail = { email -> gamblingAppViewModel.setLoginPassword(email) },
+                        onValueChangeDate = { email -> gamblingAppViewModel.setLoginPassword(email) },
+                        onValueChangePesel = { email -> gamblingAppViewModel.setLoginPassword(email) },
+                        onRegister = { }, //Create a mechanism for registering accounts
+                        checkFullNameError = { fullName -> gamblingAppViewModel.checkIfInputIncorrect(fullName, GamblingAppViewModel.inputType.FullName) },
+                        checkPasswordError = { password -> gamblingAppViewModel.checkIfInputIncorrect(password, GamblingAppViewModel.inputType.Password) },
+                        checkEmailError = { email -> gamblingAppViewModel.checkIfInputIncorrect(email, GamblingAppViewModel.inputType.Email) },
+                        checkDateError = { date -> gamblingAppViewModel.checkIfInputIncorrect(date, GamblingAppViewModel.inputType.Date) },
+                        checkPeselError = { pesel -> gamblingAppViewModel.checkIfInputIncorrect(pesel, GamblingAppViewModel.inputType.Pesel) },
+                        emailText = registerState.email,
+                        passwordText = registerState.password,
+                        peselText = registerState.pesel,
+                        dateText = registerState.birthDate,
+                        fullNameText = registerState.fullName,
+                        modifier = Modifier
+                    )
                 }
                 composable(route = AppRoutes.GameMenu.name) {
-
+                        GameMenuScreen(
+                            onRouletteClick = { navController.navigate(AppRoutes.Roulette.name) },
+                            onBlackjackClick = { navController.navigate(AppRoutes.Blackjack.name) },
+                            onDiceClick = { navController.navigate(AppRoutes.Dice.name) },
+                            onSlotsClick = { navController.navigate(AppRoutes.Slots.name) },
+                            onShopClick = { navController.navigate(AppRoutes.Money.name) },
+                            onComingSoonClick = {  }, //Implement a dialog box saying "Updates coming soon!"
+                            modifier = Modifier
+                        )
                 }
                 composable(route = AppRoutes.Settings.name) {
 
                 }
                 composable(route = AppRoutes.Roulette.name) {
-
+                    RouletteScreen(
+                        onBetChange = { bet -> gamblingAppViewModel.onRouletteBetChange(bet)},
+                        checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
+                        onRedClick = { gamblingAppViewModel.onRouletteButtonClick(Color.Red)},
+                        onBlackClick = { gamblingAppViewModel.onRouletteButtonClick(Color.Black)},
+                        onGreenClick = { gamblingAppViewModel.onRouletteButtonClick(Color.Green)},
+                        onSpinClick = { gamblingAppViewModel.onRouletteSpinClick()},
+                        onSpinFinished = { angle -> gamblingAppViewModel.updateRouletteState(angle)},
+                        betText = appState.chosenRouletteBet,
+                        lastResults = appState.lastResult,
+                        rouletteSpun = appState.rouletteSpun,
+                        startDegree = appState.rouletteDegree,
+                        targetDegree = appState.targetRouletteDegree,
+                        modifier = Modifier
+                    )
                 }
                 composable(route = AppRoutes.Dice.name) {
 
@@ -190,7 +228,7 @@ fun GamblingAppBarPreview()
     {
         Surface()
         {
-            GamblingAppBar({})
+            GamblingApp()
         }
     }
 }

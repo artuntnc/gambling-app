@@ -25,7 +25,7 @@ class LoadingScreenViewModel : ViewModel()
     //starts connection to the "server" (which we can simulate by having the app just wait and return locally stored data)
     private fun getUserData()
     {
-        //temporarily leave empty
+        //temporarily left empty
     }
 
     fun updateProgress() : Boolean
@@ -33,7 +33,7 @@ class LoadingScreenViewModel : ViewModel()
         //function should check progress on getting connection to the "server", for now i just increment the progress
         val newProgress = _uiState.value.progress.plus(0.01f)
         _uiState.value = LoadingScreenState(progress = newProgress)
-        if(newProgress >= 100.0f)
+        if(newProgress >= 1.0f)
             return true
         return false
     }

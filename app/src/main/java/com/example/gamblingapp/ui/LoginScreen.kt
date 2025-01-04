@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,6 +39,7 @@ fun LoginScreen(
     onValueChangePassword: (String) -> Unit,
     onValueChangeEmail: (String) -> Unit,
     onRegister: () -> Unit,
+    onLogin: () -> Unit,
     onPasswordReset: () -> Unit,
     checkEmailError: (String) -> Boolean,
     checkPasswordError: (String) -> Boolean,
@@ -100,10 +102,11 @@ fun LoginScreen(
                 .fillMaxWidth(1f)
                 .padding(10.dp)
         )
+        Spacer(modifier = modifier.padding(4.dp))
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Button(
@@ -119,6 +122,26 @@ fun LoginScreen(
             ) {
                 Text("Forgot Password?", textDecoration = TextDecoration.Underline)
             }
+            Button(
+                onClick = { onLogin() },
+                colors = ButtonColors(
+                    containerColor = Color.Black.copy(alpha = 0.2f),
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Transparent,
+                    disabledContentColor = Color.Transparent
+                ),
+                modifier = modifier
+
+            ) {
+                Text("Login", textDecoration = TextDecoration.Underline)
+            }
+        }
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
             Button(
                 onClick = { onRegister() },
                 colors = ButtonColors(
@@ -146,7 +169,7 @@ fun LoginScreenPreview()
     {
         Surface()
         {
-            LoginScreen({},{},{},{}, {false}, {false}, "", "")
+            LoginScreen({},{},{},{}, {}, {false}, {false}, "", "")
         }
     }
 }

@@ -124,7 +124,7 @@ fun LoadingScreen(
                 .fillMaxWidth(0.95f)
         )
         Text(
-            text = stringResource(R.string.loading_screen_progress, floor(loadingScreenState.progress).toString()),
+            text = stringResource(R.string.loading_screen_progress, floor(loadingScreenState.progress*100).toString()),
             modifier = modifier
                 .padding(8.dp)
         )
