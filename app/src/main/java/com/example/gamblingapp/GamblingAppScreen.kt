@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -192,7 +191,7 @@ fun GamblingApp(
                         onSpinClick = { gamblingAppViewModel.onRouletteSpinClick()},
                         onSpinFinished = { angle -> gamblingAppViewModel.updateRouletteState(angle)},
                         betText = appState.chosenRouletteBet,
-                        lastResults = appState.lastResult,
+                        lastResults = appState.lastRouletteResults,
                         rouletteSpun = appState.rouletteSpun,
                         startDegree = appState.rouletteDegree,
                         targetDegree = appState.targetRouletteDegree,

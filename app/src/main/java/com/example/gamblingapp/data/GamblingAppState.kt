@@ -1,6 +1,7 @@
 package com.example.gamblingapp.data
 
 import androidx.compose.ui.graphics.Color
+import com.example.gamblingapp.R
 
 data class GamblingAppState(
     //current user's username
@@ -16,7 +17,7 @@ data class GamblingAppState(
     val hideTopBar: Boolean = true,
 
     //last results in roulette game
-    val lastResult: List<Float> = listOf(),
+    val lastRouletteResults: List<Float> = listOf(),
 
     //chosen color for roulette game
     val chosenRouletteColor: Color = Color.Red,
@@ -37,5 +38,50 @@ data class GamblingAppState(
     val rouletteSpun: Boolean = false,
 
     //roulette current winning pair
-    val winningSector: Pair<Int, Color> = Pair(-1, Color.Yellow)
+    val winningSector: Pair<Int, Color> = Pair(-1, Color.Yellow),
+
+    //last results in slots game
+    val lastSlotsResults: List<Float> = listOf(),
+
+    //check for whether the slots have begun spinning
+    val slotsSpun: Boolean = false,
+
+    //bet set by the user
+    val chosenSlotsBet: Float = 0.0f,
+
+    //current slot 1
+    val slot1Id: Int = R.drawable.slot1cherry,
+
+    //current slot 2
+    val slot2Id: Int = R.drawable.slot1cherry,
+
+    //current slot 3
+    val slot3Id: Int = R.drawable.slot1cherry,
+
+    //next slot 1
+    val nextSlot1Id: Int = R.drawable.slot1cherry,
+
+    //next slot 2
+    val nextSlot2Id: Int = R.drawable.slot1cherry,
+
+    //next slot 3
+    val nextSlot3Id: Int = R.drawable.slot1cherry,
+
+    //last results in dice game
+    val lastDiceResults: List<Float> = listOf(),
+
+    //check for whether the dice have been cast
+    val diceCast: Boolean = false,
+
+    //bet set by the user
+    val chosenDiceBet: Float = 0.0f,
+
+    //new dice upon a roll
+    val newUserDice: Int = R.drawable.dice_1,
+
+    //new dice upon a roll
+    val newAIDice: Int = R.drawable.dice_1,
+
+    //Result message displayed after playing
+    val diceResultMessage: String = "Roll the dice to play!"
 )

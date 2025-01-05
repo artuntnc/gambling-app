@@ -27,6 +27,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -93,7 +94,6 @@ fun RouletteScreen(
         }
         TextField(
             value = betText.toString(),
-            label = { Text("Enter Your bet amount", color = Color.LightGray, fontSize = 24.sp) },
             textStyle = TextStyle(color = Color.DarkGray, fontSize = 24.sp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -101,10 +101,11 @@ fun RouletteScreen(
                 disabledContainerColor = Color.Transparent,
                 errorContainerColor = Color.Red.copy(alpha = 0.1f)
             ),
+            label = { Text("Enter Your bet amount", color = Color.LightGray, fontSize = 24.sp) },
             onValueChange = onBetChange,
             singleLine = true,
             isError = checkTextError(betText.toString()),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.None),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
             modifier = Modifier
                 .fillMaxWidth(1f)
                 .padding(20.dp)
@@ -117,7 +118,7 @@ fun RouletteScreen(
                 .size(32.dp)
         )
 
-        var angle by remember { mutableStateOf(startDegree) }
+        var angle by remember { mutableFloatStateOf(startDegree) }
         val rotation = remember { Animatable(angle) }
         LaunchedEffect(rouletteSpun)
         {
@@ -187,7 +188,7 @@ fun RouletteScreen(
             modifier = modifier
                 .padding(32.dp)
         ) {
-            Text("SPIN", fontWeight = FontWeight.Bold)
+            Text("SPIN!", fontWeight = FontWeight.Bold)
         }
     }
 }

@@ -13,4 +13,11 @@
     <color name="loading_screen_gradient_center2">#138CA9</color>
     <color name="loading_screen_gradient_end">#43DECA</color>
 
+    <color name="settings_main">#ce8ade</color>
+    <color name="settings_secondary">#9a54ab</color>
+    <color name="settings_button">#823992</color>
+    <color name="settings_background">#23CE66E6</color>
+    <color name="settings_background_border">#B6252528</color>
+
+
 </resources>

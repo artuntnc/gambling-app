@@ -1,12 +1,8 @@
 package com.example.gamblingapp.ui
 
-import android.view.animation.Animation
-import android.view.animation.DecelerateInterpolator
-import android.view.animation.RotateAnimation
-import android.widget.ImageView
-import android.widget.Toast
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import com.example.gamblingapp.R
 import com.example.gamblingapp.data.GamblingAppState
 import com.example.gamblingapp.data.LoginState
 import com.example.gamblingapp.data.RegisterState
@@ -127,45 +123,53 @@ class GamblingAppViewModel : ViewModel()
 
     fun onRouletteBetChange(bet: String)
     {
-        _appState.update { currentState ->
-            currentState.copy(chosenRouletteBet = bet.toFloat())
+        if (!_appState.value.rouletteSpun)
+        {
+            _appState.update { currentState ->
+                currentState.copy(chosenRouletteBet = bet.toFloat())
+            }
         }
     }
 
     fun onRouletteButtonClick(color: Color)
     {
-        _appState.update { currentState ->
-            currentState.copy(chosenRouletteColor = color)
+        if (!_appState.value.rouletteSpun)
+        {
+            _appState.update { currentState ->
+                currentState.copy(chosenRouletteColor = color)
+            }
         }
     }
 
     fun onRouletteSpinClick()
     {
-        val betAmount = _appState.value.chosenRouletteBet
-        val currentBalance = _appState.value.money
+        if (!_appState.value.rouletteSpun)
+        {
+            val betAmount = _appState.value.chosenRouletteBet
+            val currentBalance = _appState.value.money
 
-        // Validate bet amount
-        if (betAmount <= 0) {
+            // Validate bet amount
+            if (betAmount <= 0) {
+                _appState.update { currentState ->
+                    currentState.copy(rouletteError = "Enter a valid numeric bet amount greater than 0.")
+                }
+            }
+            if (betAmount > currentBalance) {
+                _appState.update { currentState ->
+                    currentState.copy(rouletteError = "Bet amount exceeds your current balance.")
+                }
+            }
+
             _appState.update { currentState ->
-                currentState.copy(rouletteError = "Enter a valid numeric bet amount greater than 0.")
+                currentState.copy(rouletteSpun = true)
+            }
+            _appState.update { currentState ->
+                currentState.copy(targetRouletteDegree = Random.nextFloat() * 360f + 720f)
+            }
+            _appState.update { currentState ->
+                currentState.copy(winningSector = getSector(_appState.value.targetRouletteDegree))
             }
         }
-        if (betAmount > currentBalance) {
-            _appState.update { currentState ->
-                currentState.copy(rouletteError = "Bet amount exceeds your current balance.")
-            }
-        }
-
-        _appState.update { currentState ->
-            currentState.copy(rouletteSpun = true)
-        }
-        _appState.update { currentState ->
-            currentState.copy(targetRouletteDegree = Random.nextFloat()*360f+720f)
-        }
-        _appState.update { currentState ->
-            currentState.copy(winningSector = getSector(_appState.value.targetRouletteDegree))
-        }
-
     }
 
     fun updateRouletteState(newAngle: Float)
@@ -185,18 +189,18 @@ class GamblingAppViewModel : ViewModel()
         }
 
         _appState.update { currentState ->
-            currentState.copy(rouletteDegree = newAngle)
+            currentState.copy(rouletteDegree = newAngle%360)
         }
 
         _appState.update { currentState ->
             currentState.copy(rouletteSpun = false)
         }
 
-        var lastFiveResults: MutableList<Float> = _appState.value.lastResult.toMutableList()
+        var lastFiveResults: MutableList<Float> = _appState.value.lastRouletteResults.toMutableList()
         lastFiveResults.add(0, winnings)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
-            currentState.copy(lastResult = lastFiveResults)
+            currentState.copy(lastRouletteResults = lastFiveResults)
         }
     }
 
@@ -213,5 +217,254 @@ class GamblingAppViewModel : ViewModel()
             }
         }
         return Pair(0,Color.Green)
+    }
+
+    //SLOTS FUNCTIONS
+
+    fun onSlotsBetChange(bet: String)
+    {
+        if (!_appState.value.slotsSpun)
+        {
+            _appState.update { currentState ->
+                currentState.copy(chosenSlotsBet = bet.toFloat())
+            }
+        }
+    }
+
+    fun onSlotsSpinClick()
+    {
+        if (!_appState.value.slotsSpun)
+        {
+            val betAmount = _appState.value.chosenSlotsBet
+            val currentBalance = _appState.value.money
+
+            // Validate bet amount
+            if (betAmount <= 0) {
+                _appState.update { currentState ->
+                    currentState.copy(rouletteError = "Enter a valid numeric bet amount greater than 0.")
+                }
+            }
+            if (betAmount > currentBalance) {
+                _appState.update { currentState ->
+                    currentState.copy(rouletteError = "Bet amount exceeds your current balance.")
+                }
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(slotsSpun = true)
+            }
+
+            val id1 = when(Random.nextInt(6))
+            {
+                0 -> R.drawable.slot1cherry
+                1 -> R.drawable.slot2orange
+                2 -> R.drawable.slot3purple
+                3 -> R.drawable.slot4bell
+                4 -> R.drawable.slot5bar
+                5 -> R.drawable.slot6seven
+                else -> R.drawable.slot1cherry
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(nextSlot1Id = id1)
+            }
+
+            val id2 = when(Random.nextInt(6))
+            {
+                0 -> R.drawable.slot1cherry
+                1 -> R.drawable.slot2orange
+                2 -> R.drawable.slot3purple
+                3 -> R.drawable.slot4bell
+                4 -> R.drawable.slot5bar
+                5 -> R.drawable.slot6seven
+                else -> R.drawable.slot1cherry
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(nextSlot2Id = id2)
+            }
+
+            val id3 = when(Random.nextInt(6))
+            {
+                0 -> R.drawable.slot1cherry
+                1 -> R.drawable.slot2orange
+                2 -> R.drawable.slot3purple
+                3 -> R.drawable.slot4bell
+                4 -> R.drawable.slot5bar
+                5 -> R.drawable.slot6seven
+                else -> R.drawable.slot1cherry
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(nextSlot1Id = id3)
+            }
+        }
+    }
+
+    fun updateSlotsState()
+    {
+        val betAmount = _appState.value.chosenRouletteBet
+        val currentBalance = _appState.value.money
+
+        val result1 = _appState.value.nextSlot1Id
+        val result2 = _appState.value.nextSlot2Id
+        val result3 = _appState.value.nextSlot3Id
+
+        var reward = betAmount
+
+        when {
+            result1 == result2 && result2 == result3 && result1 == R.drawable.slot6seven -> {
+                reward *= 7
+            }
+            result1 == result2 && result2 == result3 -> {
+                reward *= 4
+            }
+            result1 == result2 || result2 == result3 || result1 == result3 -> {
+                reward *= 2
+            }
+            else -> {
+                reward *= 0
+            }
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(money = currentBalance + reward - betAmount)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(slotsSpun = false)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(slot1Id = _appState.value.nextSlot1Id)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(slot1Id = _appState.value.nextSlot1Id)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(slot1Id = _appState.value.nextSlot1Id)
+        }
+
+
+        var lastFiveResults: MutableList<Float> = _appState.value.lastSlotsResults.toMutableList()
+        lastFiveResults.add(0, reward)
+        if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
+        _appState.update { currentState ->
+            currentState.copy(lastRouletteResults = lastFiveResults)
+        }
+    }
+
+    //DICE FUNCTIONS
+
+    fun onDiceBetChange(bet: String)
+    {
+        if (!_appState.value.diceCast)
+        {
+            _appState.update { currentState ->
+                currentState.copy(chosenDiceBet = bet.toFloat())
+            }
+        }
+    }
+
+    fun onDiceSpinClick()
+    {
+        if (!_appState.value.diceCast)
+        {
+            val betAmount = _appState.value.chosenDiceBet
+            val currentBalance = _appState.value.money
+
+            // Validate bet amount
+            if (betAmount <= 0) {
+                _appState.update { currentState ->
+                    currentState.copy(rouletteError = "Enter a valid numeric bet amount greater than 0.")
+                }
+            }
+            if (betAmount > currentBalance) {
+                _appState.update { currentState ->
+                    currentState.copy(rouletteError = "Bet amount exceeds your current balance.")
+                }
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(diceCast = true)
+            }
+
+            val id1 = when(Random.nextInt(6))
+            {
+                0 -> R.drawable.dice_1
+                1 -> R.drawable.dice_2
+                2 -> R.drawable.dice_3
+                3 -> R.drawable.dice_4
+                4 -> R.drawable.dice_5
+                5 -> R.drawable.dice_6
+                else -> R.drawable.dice_1
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(newAIDice = id1)
+            }
+
+            val id2 = when(Random.nextInt(6))
+            {
+                0 -> R.drawable.dice_1
+                1 -> R.drawable.dice_2
+                2 -> R.drawable.dice_3
+                3 -> R.drawable.dice_4
+                4 -> R.drawable.dice_5
+                5 -> R.drawable.dice_6
+                else -> R.drawable.dice_1
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(newUserDice = id2)
+            }
+        }
+    }
+
+    fun updateDiceState(newPlayerDice: Int, newComputerDice: Int)
+    {
+        val betAmount = _appState.value.chosenRouletteBet
+        val currentBalance = _appState.value.money
+
+
+        val (number, color) = _appState.value.winningSector
+        var winnings = betAmount
+        var resultMessage = ""
+        when {
+            newPlayerDice > newComputerDice ->
+            {
+                winnings *= 2
+                resultMessage = "You Win! 🎉"
+            }
+            newPlayerDice < newComputerDice -> {
+                winnings *= 0
+                resultMessage = "You Lose! 😞"
+            }
+            else -> {
+                winnings *= 1
+                resultMessage = "It's a Tie! 🤝"
+            }
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(money = currentBalance + winnings - betAmount)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(rouletteSpun = false)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(rouletteSpun = false)
+        }
+
+        var lastFiveResults: MutableList<Float> = _appState.value.lastDiceResults.toMutableList()
+        lastFiveResults.add(0, winnings)
+        if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
+        _appState.update { currentState ->
+            currentState.copy(lastRouletteResults = lastFiveResults)
+        }
     }
 }
