@@ -97,7 +97,7 @@ fun GamblingApp(
 )
 {
     //media player
-    val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.Smoke_Lish_Grooves)
+    val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.smoke_lish_grooves)
     musicPlayer.isLooping = true
     musicPlayer.start()
 
