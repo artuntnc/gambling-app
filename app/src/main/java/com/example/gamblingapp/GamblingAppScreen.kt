@@ -1,5 +1,7 @@
 package com.example.gamblingapp
 
+import android.content.Context
+import android.media.MediaPlayer
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -29,12 +31,17 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.gamblingapp.ui.BlackjackScreen
+import com.example.gamblingapp.ui.DiceScreen
 import com.example.gamblingapp.ui.GamblingAppViewModel
 import com.example.gamblingapp.ui.GameMenuScreen
 import com.example.gamblingapp.ui.LoadingScreen
 import com.example.gamblingapp.ui.LoginScreen
 import com.example.gamblingapp.ui.RegisterScreen
 import com.example.gamblingapp.ui.RouletteScreen
+import com.example.gamblingapp.ui.SettingsScreen
+import com.example.gamblingapp.ui.SlotsScreen
+import com.example.gamblingapp.ui.StoreScreen
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 enum class AppRoutes(@StringRes val title: Int)
@@ -85,9 +92,14 @@ fun GamblingAppBar(
 @Composable
 fun GamblingApp(
     gamblingAppViewModel: GamblingAppViewModel = viewModel(),
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    context: Context
 )
 {
+    //media player
+    val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.Smoke_Lish_Grooves)
+    musicPlayer.isLooping = true
+    musicPlayer.start()
 
     Scaffold(
     ) { innerPadding ->
@@ -179,7 +191,30 @@ fun GamblingApp(
                         )
                 }
                 composable(route = AppRoutes.Settings.name) {
-
+                    SettingsScreen(
+                        onMusicVolumeChange = {
+                                                change -> gamblingAppViewModel.onMusicVolumeChange(change)
+                                                musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
+                                              },
+                        onSoundVolumeChange = { change -> gamblingAppViewModel.onSoundVolumeChange(change)},
+                        onAccountClick = { /*nav to account settings*/},
+                        onNotificationsClick = { gamblingAppViewModel.onNotificationsClick()},
+                        onThemesClick = { gamblingAppViewModel.onThemesClick()},
+                        onHelpClick = { gamblingAppViewModel.onHelpClick()},
+                        onSignOutClick = {
+                                            gamblingAppViewModel.onSignOutClick()
+                                            navController.navigate(AppRoutes.Login.name) {
+                                                popUpTo(AppRoutes.Login.name) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                         },
+                        musicVolume = appState.musicVolume,
+                        soundVolume = appState.soundVolume,
+                        notificationsOn = appState.areNotificationsOn,
+                        altThemeOn = appState.altThemeOn,
+                        modifier = Modifier
+                    )
                 }
                 composable(route = AppRoutes.Roulette.name) {
                     RouletteScreen(
@@ -199,16 +234,66 @@ fun GamblingApp(
                     )
                 }
                 composable(route = AppRoutes.Dice.name) {
-
+                    DiceScreen(
+                        onBetChange = { bet -> gamblingAppViewModel.onDiceBetChange(bet)},
+                        checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
+                        onDiceRollClick = { gamblingAppViewModel.onDiceRollClick()},
+                        onDiceRollFinished = { gamblingAppViewModel.updateDiceState()},
+                        betText = appState.chosenDiceBet,
+                        lastResults = appState.lastDiceResults,
+                        diceCast = appState.diceCast,
+                        resultMessage = appState.diceResultMessage,
+                        aiDiceId = appState.newAIDice,
+                        playerDiceId = appState.newUserDice,
+                        modifier = Modifier
+                    )
                 }
                 composable(route = AppRoutes.Blackjack.name) {
-
+                        BlackjackScreen(
+                            onBetChange = { bet -> gamblingAppViewModel.onBlackjackBetChange(bet)},
+                            checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
+                            onHitClick = { gamblingAppViewModel.onBlackjackHitClick()},
+                            onStandClick = { gamblingAppViewModel.onBlackjackStandClick()},
+                            onPlayAgainClick = { gamblingAppViewModel.onBlackjackPlayAgainClick()},
+                            onDrawFinished = { gamblingAppViewModel.updateBlackjackState()},
+                            onBustedFinished = { gamblingAppViewModel.updateBlackjackBustedState()},
+                            betText = appState.chosenBlackjackBet,
+                            lastResults = appState.lastBlackjackResults,
+                            playerCards = appState.playerCards,
+                            dealerCards = appState.dealerCards,
+                            isPlayerTurn = appState.isPlayerTurn,
+                            gameOver = appState.isGameOver,
+                            busted = appState.isBusted,
+                            dealerHandTotal = appState.dealerTotal,
+                            playerHandTotal = appState.playerTotal,
+                            modifier = Modifier
+                        )
                 }
                 composable(route = AppRoutes.Slots.name) {
-
+                    SlotsScreen(
+                        onBetChange = { bet -> gamblingAppViewModel.onSlotsBetChange(bet)},
+                        checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
+                        onSpinClick = { gamblingAppViewModel.onSlotsSpinClick()},
+                        onSpinFinished = { gamblingAppViewModel.updateSlotsState()},
+                        betText = appState.chosenSlotsBet,
+                        slotsSpun = appState.slotsSpun,
+                        startSlot1 = appState.slot1Id,
+                        startSlot2 = appState.slot2Id,
+                        startSlot3 = appState.slot3Id,
+                        endSlot1 = appState.nextSlot1Id,
+                        endSlot2 = appState.nextSlot2Id,
+                        endSlot3 = appState.nextSlot3Id,
+                        lastResults = appState.lastSlotsResults,
+                        modifier = Modifier
+                    )
                 }
                 composable(route = AppRoutes.Money.name) {
-
+                    StoreScreen(
+                        onBuy1000Click = { },
+                        onBuy100Click = { },
+                        onBuyFreeClick = { },
+                        modifier = Modifier
+                    )
                 }
                 composable(route = AppRoutes.PasswordReset.name) {
 
@@ -227,7 +312,7 @@ fun GamblingAppBarPreview()
     {
         Surface()
         {
-            GamblingApp()
+            //GamblingApp()
         }
     }
 }

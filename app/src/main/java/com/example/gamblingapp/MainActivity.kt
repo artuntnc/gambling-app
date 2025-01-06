@@ -1,7 +1,5 @@
 package com.example.gamblingapp
 
-import  android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,18 +8,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.gamblingapp.ui.LoadingScreen
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +42,7 @@ class MainActivity : ComponentActivity() {
                                 .calculateEndPadding(layoutDirection)
                         )
                 ) {
-                    GamblingApp()
+                    GamblingApp(context = this)
                 }
             }
         }
@@ -59,15 +53,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ReplyAppCompactPreview() {
     GamblingAppTheme {
-        GamblingApp()
+        //GamblingApp(context = this)
     }
 }
-
-@Composable
-fun BalanceScreen(balance:Int,modifier: Modifier = Modifier){
-    Text(
-        text = "Balance: $$balance",
-        modifier = modifier
-    )
-}
-

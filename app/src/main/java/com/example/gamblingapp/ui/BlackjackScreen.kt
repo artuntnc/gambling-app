@@ -7,121 +7,56 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
+import com.example.gamblingapp.data.Card
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
-data class Card(val suit: String, val value: String) {
-    fun getImageResource(): Int {
-        return when ("${value}_of_${suit}") {
-            "ace_of_hearts" -> R.drawable.ace_of_hearts
-            "ace_of_clubs" -> R.drawable.ace_of_clubs
-            "ace_of_diamonds" -> R.drawable.ace_of_diamonds
-            "ace_of_spades" -> R.drawable.ace_of_spades2
-            "2_of_hearts" -> R.drawable.two_of_hearts
-            "8_of_clubs" -> R.drawable.eight_of_clubs
-            "8_of_diamonds"-> R.drawable.eight_of_diamonds
-            "5_of_clubs" -> R.drawable.five_of_clubs
-            "5_of_diamonds" -> R.drawable.five_of_diamonds
-            "4_of_clubs" -> R.drawable.four_of_clubs
-            "4_of_diamonds" -> R.drawable.four_of_diamonds
-            "jack_of_clubs" -> R.drawable.jack_of_clubs2
-            "jack_of_diamonds" -> R.drawable.jack_of_diamonds2
-            "king_of_clubs" -> R.drawable.king_of_clubs2
-            "king_of_diamonds" -> R.drawable.king_of_diamonds2
-            "9_of_clubs" -> R.drawable.nine_of_clubs
-            "9_of_diamonds" -> R.drawable.nine_of_diamonds
-            "queen_of_clubs" -> R.drawable.queen_of_clubs2
-            "queen_of_diamonds" -> R.drawable.queen_of_diamonds2
-            "7_of_clubs" -> R.drawable.seven_of_clubs
-            "7_of_diamond" -> R.drawable.seven_of_diamonds
-            "6_of_clubs" -> R.drawable.six_of_clubs
-            "6_of_diamonds" -> R.drawable.six_of_diamonds
-            "10_of_clubs" -> R.drawable.ten_of_clubs
-            "10_of_diamonds" -> R.drawable.ten_of_diamonds
-            "3_of_clubs" -> R.drawable.three_of_clubs
-            "3_of_diamonds" -> R.drawable.three_of_diamonds
-            "2_of_clubs" -> R.drawable.two_of_clubs
-            "2_of_diamonds" -> R.drawable.two_of_diamonds
 
-            "3_of_hearts" -> R.drawable.three_of_hearts
-            "4_of_hearts" -> R.drawable.four_of_hearts
-            "5_of_hearts" -> R.drawable.five_of_hearts
-            "6_of_hearts" -> R.drawable.six_of_hearts
-            "7_of_hearts" -> R.drawable.seven_of_hearts
-            "8_of_hearts" -> R.drawable.eight_of_hearts
-            "9_of_hearts" -> R.drawable.nine_of_hearts
-            "10_of_hearts" -> R.drawable.ten_of_hearts
-            "jack_of_hearts" -> R.drawable.jack_of_hearts2
-            "queen_of_hearts" -> R.drawable.queen_of_hearts2
-            "king_of_hearts" -> R.drawable.king_of_hearts2
-
-            "2_of_spades" -> R.drawable.two_of_spades
-            "3_of_spades" -> R.drawable.three_of_spades
-            "4_of_spades" -> R.drawable.four_of_spades
-            "5_of_spades" -> R.drawable.five_of_spades
-            "6_of_spades" -> R.drawable.six_of_spades
-            "7_of_spades" -> R.drawable.seven_of_spades
-            "8_of_spades" -> R.drawable.eight_of_spades
-            "9_of_spades" -> R.drawable.nine_of_spades
-            "10_of_spades" -> R.drawable.ten_of_spades
-            "jack_of_spades" -> R.drawable.jack_of_spades2
-            "queen_of_spades" -> R.drawable.queen_of_spades2
-            "king_of_spades" -> R.drawable.king_of_spades2
-            else -> R.drawable.cardbacksite
-        }
-    }
-}
-
-fun drawCard(): Card {
-    val suits = listOf("hearts", "spades", "diamonds", "clubs")
-    val values = listOf("ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king")
-    return Card(suits.random(), values.random())
-}
 
 @Composable
 fun BlackjackScreen(
     onBetChange: (String) -> Unit,
     checkTextError: (String) -> Boolean,
-    onDiceRollClick: () -> Unit,
-    onDiceRollFinished: () -> Unit,
+    onHitClick: () -> Unit,
+    onStandClick: () -> Unit,
+    onPlayAgainClick: () -> Unit,
+    onDrawFinished: () -> Unit,
+    onBustedFinished: () -> Unit,
     betText: Float,
     lastResults: List<Float> = listOf(100f, 0f),
-    diceCast: Boolean = false,
-    resultMessage: String = "Roll the dice to play!",
-    aiDiceId: Int = R.drawable.dice_1,
-    playerDiceId: Int = R.drawable.dice_1,
+    playerCards: List<Card> = listOf(Card("hearts","ace"),Card("hearts","ace")),
+    dealerCards: List<Card> = listOf(Card("hearts","ace"),Card("hearts","ace")),
+    isPlayerTurn: Boolean = false,
+    gameOver: Boolean = true,
+    busted: Boolean = false,
+    dealerHandTotal: Int = 0,
+    playerHandTotal: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    val playerCards = remember { mutableStateListOf<Card>() }
-    val dealerCards = remember { mutableStateListOf<Card>() }
-    val balance = remember { mutableIntStateOf(1000) }
-    var isPlayerTurn by remember { mutableStateOf(true) }
-    var gameOver by remember { mutableStateOf(false) }
-    var busted by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
-
-    if (playerCards.isEmpty() && dealerCards.isEmpty()) {
-        // Start the game
-        playerCards.add(drawCard())
-        playerCards.add(drawCard())
-        dealerCards.add(drawCard())
-        dealerCards.add(drawCard())
-    }
 
     Column(
         modifier = Modifier
@@ -131,15 +66,58 @@ fun BlackjackScreen(
                 contentScale = ContentScale.FillBounds
             )
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = "Blackjack", fontSize = 36.sp)
+        //Last five results
+        Row(
+            modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(stringResource(R.string.roulette_last_result), color = Color.White, fontSize = 12.sp)
+            Column(
+                modifier = Modifier.height(100.dp)
+            )
+            {
+                for (result in lastResults)
+                {
+                    Text(stringResource(R.string.roulette_result_money, result), color = Color.White, fontSize = 12.sp)
+                }
+            }
+        }
+        TextField(
+            value = betText.toString(),
+            textStyle = TextStyle(color = Color.DarkGray, fontSize = 24.sp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                errorContainerColor = Color.Red.copy(alpha = 0.1f)
+            ),
+            label = { Text("Enter Your bet amount", color = Color.LightGray, fontSize = 24.sp) },
+            onValueChange = onBetChange,
+            singleLine = true,
+            isError = checkTextError(betText.toString()),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(20.dp)
+        )
 
+        Text(
+            text = "Blackjack",
+            fontSize = 36.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            modifier = modifier
+                .padding(top = 16.dp, bottom = 32.dp)
+        )
 
-        // Dealer's Cards
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Dealer's Cards", fontSize = 24.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        //Dealer's Cards
+        Column(horizontalAlignment = Alignment.CenterHorizontally)
+        {
+            Text(text = "Dealer's Cards", fontSize = 24.sp, color = Color.White)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp))
+            {
                 dealerCards.forEach { card ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
@@ -147,21 +125,28 @@ fun BlackjackScreen(
                     ) {
                         Image(
                             painter = painterResource(id = card.getImageResource()),
-                            contentDescription = null
+                            contentDescription = "dealer card"
                         )
                     }
                 }
             }
-            Text(text = "Total: ${calculateHandTotal(dealerCards)}", fontSize = 20.sp)
+            Text(
+                text = "Total: $dealerHandTotal",
+                fontSize = 20.sp,
+                color = Color.White,
+                modifier = modifier.padding(top = 2.dp)
+            )
         }
 
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Player's Cards
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Player's Cards", fontSize = 24.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        //Player's Cards
+        Column(horizontalAlignment = Alignment.CenterHorizontally)
+        {
+            Text(text = "Player's Cards", fontSize = 24.sp, color = Color.White)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp))
+            {
                 playerCards.forEach { card ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
@@ -169,93 +154,54 @@ fun BlackjackScreen(
                     ) {
                         Image(
                             painter = painterResource(id = card.getImageResource()),
-                            contentDescription = null
+                            contentDescription = "player card"
                         )
                     }
                 }
             }
-            Text(text = "Total: ${calculateHandTotal(playerCards)}", fontSize = 20.sp)
+            Text(
+                text = "Total: $playerHandTotal",
+                fontSize = 20.sp, color = Color.White,
+                modifier = modifier.padding(top = 2.dp)
+            )
         }
 
         // Player Actions
-        if (isPlayerTurn && !gameOver) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(onClick = {
-                    playerCards.add(drawCard())
-                    if (calculateHandTotal(playerCards) > 21) {
-                        gameOver = true
-                        busted = true
-                    }
-                }) {
+        if (isPlayerTurn && !gameOver)
+        {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp))
+            {
+                Button(onClick = onHitClick)
+                {
                     Text(text = "Hit")
                 }
 
-                Button(onClick = {
-                    isPlayerTurn = false
-                    while (calculateHandTotal(dealerCards) < 17) {
-                        dealerCards.add(drawCard())
-                    }
-                    evaluateGameOutcome(playerCards, dealerCards, balance)
-                    gameOver = true
-                }) {
+                Button(onClick = onStandClick)
+                {
                     Text(text = "Stand")
                 }
             }
         }
 
-        if (gameOver) {
-            Button(onClick = {
-                playerCards.clear()
-                dealerCards.clear()
-                isPlayerTurn = true
-                gameOver = false
-            }) {
-                Text(text = "Play Again")
+        if (gameOver)
+        {
+            Button(
+                onClick = onPlayAgainClick,
+                modifier = modifier.padding(top = 24.dp)
+            )
+            {
+                Text(text = "Start Game!")
             }
         }
     }
 
-    LaunchedEffect(busted) {
-        if (busted) {
+    LaunchedEffect(busted)
+    {
+        if (busted)
+        {
             Toast.makeText(context, "You busted! Dealer wins.", Toast.LENGTH_SHORT).show()
-            busted = false
+            onBustedFinished()
         }
-    }
-}
-
-fun calculateHandTotal(cards: List<Card>): Int {
-    var total = 0
-    var aceCount = 0
-    cards.forEach { card ->
-        when (card.value) {
-            "ace" -> {
-                total += 11
-                aceCount++
-            }
-            "jack", "queen", "king" -> total += 10
-            else -> total += card.value.toInt()
-        }
-    }
-    while (total > 21 && aceCount > 0) {
-        total -= 10
-        aceCount--
-    }
-    return total
-}
-
-fun evaluateGameOutcome(
-    playerCards: List<Card>,
-    dealerCards: List<Card>,
-    balance: MutableState<Int>
-) {
-    val playerTotal = calculateHandTotal(playerCards)
-    val dealerTotal = calculateHandTotal(dealerCards)
-
-    when {
-        dealerTotal > 21 -> balance.value += 200
-        playerTotal > dealerTotal -> balance.value += 200
-        playerTotal == dealerTotal -> {} // Draw, no change in balance
-        else -> balance.value -=200
     }
 }
 
@@ -267,7 +213,7 @@ fun BlackjackScreenPreview()
     {
         Surface()
         {
-            BlackjackScreen({},{false},{},{},0f)
+            BlackjackScreen({},{false},{},{},{},{},{},0f,)
         }
     }
 }

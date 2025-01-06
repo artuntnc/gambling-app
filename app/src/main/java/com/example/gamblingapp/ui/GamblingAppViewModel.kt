@@ -1,8 +1,10 @@
 package com.example.gamblingapp.ui
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import com.example.gamblingapp.R
+import com.example.gamblingapp.data.Card
 import com.example.gamblingapp.data.GamblingAppState
 import com.example.gamblingapp.data.LoginState
 import com.example.gamblingapp.data.RegisterState
@@ -196,7 +198,7 @@ class GamblingAppViewModel : ViewModel()
             currentState.copy(rouletteSpun = false)
         }
 
-        var lastFiveResults: MutableList<Float> = _appState.value.lastRouletteResults.toMutableList()
+        val lastFiveResults: MutableList<Float> = _appState.value.lastRouletteResults.toMutableList()
         lastFiveResults.add(0, winnings)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
@@ -241,12 +243,12 @@ class GamblingAppViewModel : ViewModel()
             // Validate bet amount
             if (betAmount <= 0) {
                 _appState.update { currentState ->
-                    currentState.copy(rouletteError = "Enter a valid numeric bet amount greater than 0.")
+                    currentState.copy(slotsError = "Enter a valid numeric bet amount greater than 0.")
                 }
             }
             if (betAmount > currentBalance) {
                 _appState.update { currentState ->
-                    currentState.copy(rouletteError = "Bet amount exceeds your current balance.")
+                    currentState.copy(slotsError = "Bet amount exceeds your current balance.")
                 }
             }
 
@@ -348,7 +350,7 @@ class GamblingAppViewModel : ViewModel()
         }
 
 
-        var lastFiveResults: MutableList<Float> = _appState.value.lastSlotsResults.toMutableList()
+        val lastFiveResults: MutableList<Float> = _appState.value.lastSlotsResults.toMutableList()
         lastFiveResults.add(0, reward)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
@@ -368,7 +370,7 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
-    fun onDiceSpinClick()
+    fun onDiceRollClick()
     {
         if (!_appState.value.diceCast)
         {
@@ -378,12 +380,12 @@ class GamblingAppViewModel : ViewModel()
             // Validate bet amount
             if (betAmount <= 0) {
                 _appState.update { currentState ->
-                    currentState.copy(rouletteError = "Enter a valid numeric bet amount greater than 0.")
+                    currentState.copy(diceError = "Enter a valid numeric bet amount greater than 0.")
                 }
             }
             if (betAmount > currentBalance) {
                 _appState.update { currentState ->
-                    currentState.copy(rouletteError = "Bet amount exceeds your current balance.")
+                    currentState.copy(diceError = "Bet amount exceeds your current balance.")
                 }
             }
 
@@ -423,15 +425,16 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
-    fun updateDiceState(newPlayerDice: Int, newComputerDice: Int)
+    fun updateDiceState()
     {
         val betAmount = _appState.value.chosenRouletteBet
         val currentBalance = _appState.value.money
 
+        val newPlayerDice = _appState.value.newUserDice
+        val newComputerDice = _appState.value.newAIDice
 
-        val (number, color) = _appState.value.winningSector
         var winnings = betAmount
-        var resultMessage = ""
+        val resultMessage: String
         when {
             newPlayerDice > newComputerDice ->
             {
@@ -453,18 +456,228 @@ class GamblingAppViewModel : ViewModel()
         }
 
         _appState.update { currentState ->
-            currentState.copy(rouletteSpun = false)
+            currentState.copy(diceCast = false)
         }
 
         _appState.update { currentState ->
-            currentState.copy(rouletteSpun = false)
+            currentState.copy(diceResultMessage = resultMessage)
         }
 
-        var lastFiveResults: MutableList<Float> = _appState.value.lastDiceResults.toMutableList()
+        val lastFiveResults: MutableList<Float> = _appState.value.lastDiceResults.toMutableList()
         lastFiveResults.add(0, winnings)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
             currentState.copy(lastRouletteResults = lastFiveResults)
         }
+    }
+
+    //BLACKJACK FUNCTIONS
+
+    fun onBlackjackBetChange(bet: String)
+    {
+        if (!_appState.value.isGameOver && !_appState.value.blackjackPlayed)
+        {
+            _appState.update { currentState ->
+                currentState.copy(chosenBlackjackBet = bet.toFloat())
+            }
+        }
+    }
+
+    fun onBlackjackHitClick()
+    {
+        if (!_appState.value.blackjackPlayed)
+        {
+            val playerCards = _appState.value.playerCards.toMutableList()
+
+            playerCards.add(drawCard())
+
+            _appState.update { currentState ->
+                currentState.copy(playerCards = playerCards)
+            }
+
+            val playerHandTotal = calculateHandTotal(playerCards)
+
+            if (playerHandTotal > 21) {
+                _appState.update { currentState ->
+                    currentState.copy(isGameOver = true)
+                }
+                _appState.update { currentState ->
+                    currentState.copy(isBusted = true)
+                }
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(playerTotal = playerHandTotal)
+            }
+        }
+    }
+
+    fun onBlackjackStandClick()
+    {
+        if (!_appState.value.blackjackPlayed)
+        {
+            val dealerCards = _appState.value.dealerCards.toMutableList()
+
+            _appState.update { currentState ->
+                currentState.copy(isPlayerTurn = false)
+            }
+
+            var dealerHandTotal = calculateHandTotal(dealerCards)
+
+            while (dealerHandTotal < 17) {
+                dealerCards.add(drawCard())
+                _appState.update { currentState ->
+                    currentState.copy(dealerCards = dealerCards)
+                }
+                dealerHandTotal = calculateHandTotal(dealerCards)
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(dealerTotal = dealerHandTotal)
+            }
+
+            evaluateGameOutcome()
+
+            _appState.update { currentState ->
+                currentState.copy(isGameOver = true)
+            }
+        }
+
+    }
+
+    fun onBlackjackPlayAgainClick()
+    {
+        val playerCards = listOf(drawCard(),drawCard())
+        val dealerCards = listOf(drawCard(),drawCard())
+
+        _appState.update { currentState ->
+            currentState.copy(playerCards = playerCards)
+        }
+        _appState.update { currentState ->
+            currentState.copy(dealerCards = dealerCards)
+        }
+
+        _appState.update { currentState ->
+            currentState.copy(isGameOver = false)
+        }
+        _appState.update { currentState ->
+            currentState.copy(isGameOver = true)
+        }
+    }
+
+    fun updateBlackjackState()
+    {
+        //class to run on animation end, to do when doing animations, make more for every animation
+    }
+
+    fun updateBlackjackBustedState()
+    {
+        _appState.update { currentState ->
+            currentState.copy(isBusted = false)
+        }
+    }
+
+    private fun drawCard(): Card
+    {
+        val suits = listOf("hearts", "spades", "diamonds", "clubs")
+        val values = listOf("ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king")
+        return Card(suits.random(), values.random())
+    }
+
+    private fun calculateHandTotal(cards: List<Card>): Int
+    {
+        var total = 0
+        var aceCount = 0
+        cards.forEach { card ->
+            when (card.value) {
+                "ace" -> {
+                    total += 11
+                    aceCount++
+                }
+                "jack", "queen", "king" -> total += 10
+                else -> total += card.value.toInt()
+            }
+        }
+        while (total > 21 && aceCount > 0) {
+            total -= 10
+            aceCount--
+        }
+
+        return total
+    }
+
+    private fun evaluateGameOutcome()
+    {
+        val balance = _appState.value.money
+        val betAmount = _appState.value.chosenRouletteBet
+
+        val playerCards = _appState.value.playerCards
+        val dealerCards = _appState.value.dealerCards
+
+        val playerTotal = calculateHandTotal(playerCards)
+        val dealerTotal = calculateHandTotal(dealerCards)
+
+        when {
+            dealerTotal > 21 || playerTotal > dealerTotal -> {
+                _appState.update { currentState ->
+                    currentState.copy(money = balance + betAmount)
+                }
+            }
+            playerTotal == dealerTotal -> {} //Draw, no change in balance
+            else -> {
+                _appState.update { currentState ->
+                    currentState.copy(money = balance - betAmount)
+                }
+            }
+        }
+
+        val lastFiveResults: MutableList<Float> = _appState.value.lastBlackjackResults.toMutableList()
+        lastFiveResults.add(0, betAmount*2)
+        if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
+        _appState.update { currentState ->
+            currentState.copy(lastRouletteResults = lastFiveResults)
+        }
+    }
+
+    //SETTINGS
+    fun onMusicVolumeChange(newVolume: Float)
+    {
+        _appState.update { currentState ->
+            currentState.copy(musicVolume = newVolume)
+        }
+    }
+    fun onSoundVolumeChange(newVolume: Float)
+    {
+        _appState.update { currentState ->
+            currentState.copy(soundVolume = newVolume)
+        }
+    }
+    fun onNotificationsClick()
+    {
+        val prevNotif = _appState.value.areNotificationsOn
+
+        _appState.update { currentState ->
+            currentState.copy(areNotificationsOn = !prevNotif)
+        }
+
+        //to do
+    }
+    fun onThemesClick()
+    {
+        val prevTheme = _appState.value.altThemeOn
+
+        _appState.update { currentState ->
+            currentState.copy(altThemeOn = !prevTheme)
+        }
+
+        //to do
+    }
+    fun onHelpClick()
+    {
+        //to do
+    }
+    fun onSignOutClick()
+    {
+        //save user data
     }
 }

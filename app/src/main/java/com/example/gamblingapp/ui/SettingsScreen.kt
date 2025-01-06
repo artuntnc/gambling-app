@@ -14,7 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -145,6 +150,11 @@ fun SettingsScreen(
                 .border(1.dp, colorResource(R.color.settings_background_border))
                 .padding(2.dp)
         ) {
+            Icon(
+                Icons.Rounded.Notifications,
+                contentDescription = "Volume slider icon",
+                tint = colorResource(R.color.settings_main)
+            )
             Text(text = stringResource(R.string.notifications_settings), color = colorResource(R.color.settings_main), fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.weight(0.8f))
             Switch(
@@ -162,6 +172,11 @@ fun SettingsScreen(
                 .border(1.dp, colorResource(R.color.settings_background_border))
                 .padding(2.dp)
         ) {
+            Icon(
+                Icons.Rounded.Star,
+                contentDescription = "Volume slider icon",
+                tint = colorResource(R.color.settings_main)
+            )
             Text(text = stringResource(R.string.themes_settings), color = colorResource(R.color.settings_main), fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.weight(1f))
             Switch(
@@ -178,6 +193,11 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
         ) {
+            Icon(
+                Icons.Rounded.AccountCircle,
+                contentDescription = "Volume slider icon",
+                tint = colorResource(R.color.settings_main)
+            )
             Text(text = stringResource(R.string.account_settings), color = colorResource(R.color.settings_main), fontWeight = FontWeight.Bold)
         }
 
@@ -189,7 +209,12 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
         ) {
-            Text(text = stringResource(R.string.themes_settings), color = colorResource(R.color.settings_main), fontWeight = FontWeight.Bold)
+            Icon(
+                Icons.Rounded.Info,
+                contentDescription = "Volume slider icon",
+                tint = colorResource(R.color.settings_main)
+            )
+            Text(text = stringResource(R.string.help_settings), color = colorResource(R.color.settings_main), fontWeight = FontWeight.Bold)
         }
 
         Button(
@@ -200,6 +225,11 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth(0.95f)
         ) {
+            Icon(
+                Icons.Rounded.Close,
+                contentDescription = "Volume slider icon",
+                tint = colorResource(R.color.settings_main)
+            )
             Text(text = stringResource(R.string.sign_out_settings), color = colorResource(R.color.settings_secondary), fontWeight = FontWeight.Bold)
         }
     }

@@ -103,28 +103,21 @@ fun DiceScreen(
                 .padding(20.dp)
         )
 
-        //animation to do - don't use this
-        //var angle by remember { mutableFloatStateOf(startDegree) }
-        //val rotation = remember { Animatable(angle) }
-        /*LaunchedEffect(diceCast)
+        //animation to do
+        LaunchedEffect(diceCast)
         {
             if(diceCast)
             {
-                rotation.animateTo(
-                    targetValue = targetDegree,
-                    animationSpec = tween(3600, easing = LinearEasing)
-                ) {
-                    angle = value
-                }
+
             }
 
             onDiceRollFinished()
-        }*/
+        }
 
         Row(
             modifier = modifier
                 .fillMaxWidth(0.9f)
-                .padding(24.dp, top = 64.dp),
+                .padding(bottom = 10.dp, top = 64.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
