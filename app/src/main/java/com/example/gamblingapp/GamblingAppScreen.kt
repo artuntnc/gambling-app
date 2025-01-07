@@ -4,8 +4,10 @@ import android.content.Context
 import android.media.MediaPlayer
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -65,27 +67,35 @@ fun GamblingAppBar(
     moneyText: String = "1000$",
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            contentScale = ContentScale.Crop,
-            painter = painterResource(R.drawable.set_ic),
-            contentDescription = "roulette game",
+    Column {
+        Box(
             modifier = modifier
-                .fillMaxHeight()
-                .clickable(onClick = onSettingClick)
-                .padding(4.dp)
+                .height(20.dp)
+                .background(Color(27, 206, 211, 255))
         )
-        Text(
-            text = moneyText,
-            fontSize = 32.sp,
+        Row(
             modifier = modifier
-        )
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(Color.LightGray),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                contentScale = ContentScale.Crop,
+                painter = painterResource(R.drawable.set_ic),
+                contentDescription = "roulette game",
+                modifier = modifier
+                    .fillMaxHeight()
+                    .clickable(onClick = onSettingClick)
+                    .padding(4.dp)
+            )
+            Text(
+                text = moneyText,
+                fontSize = 32.sp,
+                modifier = modifier
+            )
+        }
     }
 }
 
@@ -96,28 +106,23 @@ fun GamblingApp(
     context: Context
 )
 {
+    //app state that controls the app
+    val appState by gamblingAppViewModel.appState.collectAsState()
+    val loginState by gamblingAppViewModel.loginState.collectAsState()
+    val registerState by gamblingAppViewModel.registerState.collectAsState()
+
     //media player
     val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.smoke_lish_grooves)
     musicPlayer.isLooping = true
+    musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
     musicPlayer.start()
 
     Scaffold(
+        topBar = { if(!appState.hideTopBar){ GamblingAppBar({ navController.navigate(AppRoutes.Settings.name) }, appState.money.toString() + "$") }}
     ) { innerPadding ->
-
-        //app state that controls the app
-        val appState by gamblingAppViewModel.appState.collectAsState()
-        val loginState by gamblingAppViewModel.loginState.collectAsState()
-        val registerState by gamblingAppViewModel.registerState.collectAsState()
-
         Column(
 
         ){
-            //Check if bar should be hidden or not, hidden by default
-            if(!appState.hideTopBar)
-            {
-                GamblingAppBar({ navController.navigate(AppRoutes.Settings.name) }, appState.money.toString() + "$")
-            }
-
             //component responsible for navigation in the app
             NavHost(
                 navController = navController,
@@ -143,10 +148,9 @@ fun GamblingApp(
                                         if(gamblingAppViewModel.getUserData())
                                         {
                                             gamblingAppViewModel.changeTopBarState()
-                                            navController.navigate(AppRoutes.GameMenu.name) {
-                                                popUpTo(AppRoutes.Login.name) {
-                                                    inclusive = true
-                                                }
+                                            navController.navigate(AppRoutes.GameMenu.name)
+                                            {
+                                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                             }
                                         }
                                   },
@@ -202,11 +206,11 @@ fun GamblingApp(
                         onThemesClick = { gamblingAppViewModel.onThemesClick()},
                         onHelpClick = { gamblingAppViewModel.onHelpClick()},
                         onSignOutClick = {
+                                            gamblingAppViewModel.changeTopBarState()
                                             gamblingAppViewModel.onSignOutClick()
-                                            navController.navigate(AppRoutes.Login.name) {
-                                                popUpTo(AppRoutes.Login.name) {
-                                                    inclusive = true
-                                                }
+                                            navController.navigate(AppRoutes.GameMenu.name)
+                                            {
+                                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                             }
                                          },
                         musicVolume = appState.musicVolume,
@@ -224,12 +228,14 @@ fun GamblingApp(
                         onBlackClick = { gamblingAppViewModel.onRouletteButtonClick(Color.Black)},
                         onGreenClick = { gamblingAppViewModel.onRouletteButtonClick(Color.Green)},
                         onSpinClick = { gamblingAppViewModel.onRouletteSpinClick()},
-                        onSpinFinished = { angle -> gamblingAppViewModel.updateRouletteState(angle)},
+                        onUpdateAngle = { angle -> gamblingAppViewModel.onUpdateAngle(angle)},
+                        onSpinFinished = { gamblingAppViewModel.updateRouletteState()},
                         betText = appState.chosenRouletteBet,
                         lastResults = appState.lastRouletteResults,
                         rouletteSpun = appState.rouletteSpun,
                         startDegree = appState.rouletteDegree,
                         targetDegree = appState.targetRouletteDegree,
+                        rotation = appState.rotation,
                         modifier = Modifier
                     )
                 }
@@ -271,10 +277,15 @@ fun GamblingApp(
                 }
                 composable(route = AppRoutes.Slots.name) {
                     SlotsScreen(
-                        onBetChange = { bet -> gamblingAppViewModel.onSlotsBetChange(bet)},
-                        checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
-                        onSpinClick = { gamblingAppViewModel.onSlotsSpinClick()},
-                        onSpinFinished = { gamblingAppViewModel.updateSlotsState()},
+                        onBetChange = { bet -> gamblingAppViewModel.onSlotsBetChange(bet) },
+                        checkTextError = { bet ->
+                            gamblingAppViewModel.checkIfInputIncorrect(
+                                bet,
+                                GamblingAppViewModel.inputType.Money
+                            )
+                        },
+                        onSpinClick = { gamblingAppViewModel.onSlotsSpinClick() },
+                        onSpinFinished = { gamblingAppViewModel.updateSlotsState() },
                         betText = appState.chosenSlotsBet,
                         slotsSpun = appState.slotsSpun,
                         startSlot1 = appState.slot1Id,
@@ -284,7 +295,15 @@ fun GamblingApp(
                         endSlot2 = appState.nextSlot2Id,
                         endSlot3 = appState.nextSlot3Id,
                         lastResults = appState.lastSlotsResults,
-                        modifier = Modifier
+                        updateSpinningSlot = { gamblingAppViewModel.onUpdateSlot() },
+                        currentSlotSpinning = appState.currentSlotSpinning,
+                        slot1BeginOffset = appState.slot1BeginOffset,
+                        slot1EndOffset = appState.slot1EndOffset,
+                        slot2BeginOffset = appState.slot2BeginOffset,
+                        slot2EndOffset = appState.slot2EndOffset,
+                        slot3BeginOffset = appState.slot3BeginOffset,
+                        slot3EndOffset = appState.slot3EndOffset,
+                        modifier = Modifier,
                     )
                 }
                 composable(route = AppRoutes.Money.name) {

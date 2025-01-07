@@ -1,9 +1,6 @@
 package com.example.gamblingapp.ui
 
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +43,7 @@ fun BlackjackScreen(
     onPlayAgainClick: () -> Unit,
     onDrawFinished: () -> Unit,
     onBustedFinished: () -> Unit,
-    betText: Float,
+    betText: String,
     lastResults: List<Float> = listOf(100f, 0f),
     playerCards: List<Card> = listOf(Card("hearts","ace"),Card("hearts","ace")),
     dealerCards: List<Card> = listOf(Card("hearts","ace"),Card("hearts","ace")),
@@ -65,43 +63,57 @@ fun BlackjackScreen(
                 painterResource(id = R.drawable.blackjack_gradient),
                 contentScale = ContentScale.FillBounds
             )
-            .padding(16.dp),
+            .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        //Last five results
         Row(
             modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.Start
         ) {
-            Text(stringResource(R.string.roulette_last_result), color = Color.White, fontSize = 12.sp)
+            TextField(
+                value = betText,
+                textStyle = TextStyle(color = Color.DarkGray, fontSize = 20.sp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Red.copy(alpha = 0.1f)
+                ),
+                label = { Text(stringResource(R.string.enter_bet), color = Color.LightGray, fontSize = 24.sp) },
+                onValueChange = onBetChange,
+                singleLine = true,
+                isError = checkTextError(betText),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                modifier = Modifier
+                    .fillMaxWidth(1f)
+                    .padding(2.dp)
+                    .weight(0.75f)
+            )
+            VerticalDivider(
+                color = Color.DarkGray,
+                thickness = 1.dp,
+                modifier = modifier
+                    .height(120.dp)
+                    .padding(2.dp))
+            Text(
+                stringResource(R.string.last_results),
+                color = Color.White,
+                fontSize = 14.sp,
+                modifier = modifier
+                    .weight(0.3f)
+            )
             Column(
-                modifier = Modifier.height(100.dp)
+                modifier = Modifier
+                    .height(120.dp)
+                    .weight(0.3f)
             )
             {
                 for (result in lastResults)
                 {
-                    Text(stringResource(R.string.roulette_result_money, result), color = Color.White, fontSize = 12.sp)
+                    Text(stringResource(R.string.result_money, result), color = Color.White, fontSize = 12.sp)
                 }
             }
         }
-        TextField(
-            value = betText.toString(),
-            textStyle = TextStyle(color = Color.DarkGray, fontSize = 24.sp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                errorContainerColor = Color.Red.copy(alpha = 0.1f)
-            ),
-            label = { Text("Enter Your bet amount", color = Color.LightGray, fontSize = 24.sp) },
-            onValueChange = onBetChange,
-            singleLine = true,
-            isError = checkTextError(betText.toString()),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(20.dp)
-        )
 
         Text(
             text = "Blackjack",
@@ -213,7 +225,7 @@ fun BlackjackScreenPreview()
     {
         Surface()
         {
-            BlackjackScreen({},{false},{},{},{},{},{},0f,)
+            BlackjackScreen({},{false},{},{},{},{},{},"",)
         }
     }
 }

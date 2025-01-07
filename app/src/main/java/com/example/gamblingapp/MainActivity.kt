@@ -24,11 +24,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
-        //Getting the user balance from SharedPreferences
-        //val sharedPreferences: SharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        ///val userBalance = sharedPreferences.getInt("userBalance", 0)
-
         //Nothing should be called from MainActivity, only the standard padding should be given and size values
         setContent {
             GamblingAppTheme {

@@ -15,8 +15,10 @@
 
     <string name="loading_screen_progress">%s%%</string>
 
-    <string name="roulette_last_result">Last result:</string>
-    <string name="roulette_result_money">%s$</string>
+    <string name="enter_bet">Enter Your bet:</string>
+    <string name="last_results">Last results:</string>
+    <string name="result_money">%s$</string>
+
     <string name="roulette_error_less_than_0">Enter a valid numeric bet amount greater than 0.</string>
     <string name="roulette_error_balance">Bet amount exceeds your current balance.</string>
 

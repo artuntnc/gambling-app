@@ -1,7 +1,12 @@
 package com.example.gamblingapp.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.Ease
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
 
@@ -56,8 +65,16 @@ fun SlotsScreen(
     checkTextError: (String) -> Boolean,
     onSpinClick: () -> Unit,
     onSpinFinished: () -> Unit,
-    betText: Float,
+    updateSpinningSlot: () -> Unit,
+    betText: String,
     slotsSpun: Boolean = false,
+    currentSlotSpinning: Int = 0,
+    slot1BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    slot1EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
+    slot2BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    slot2EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
+    slot3BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    slot3EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
     startSlot1: Int = R.drawable.slot5bar,
     startSlot2: Int = R.drawable.slot5bar,
     startSlot3: Int = R.drawable.slot5bar,
@@ -79,125 +96,130 @@ fun SlotsScreen(
     ) {
         Row(
             modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.Start
         ) {
-            Text(stringResource(R.string.roulette_last_result), color = Color.White, fontSize = 12.sp)
+            TextField(
+                value = betText,
+                textStyle = TextStyle(color = Color.DarkGray, fontSize = 20.sp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Red.copy(alpha = 0.1f)
+                ),
+                label = { Text(stringResource(R.string.enter_bet), color = Color.LightGray, fontSize = 24.sp) },
+                onValueChange = onBetChange,
+                singleLine = true,
+                isError = checkTextError(betText),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                modifier = Modifier
+                    .fillMaxWidth(1f)
+                    .padding(2.dp)
+                    .weight(0.75f)
+            )
+            VerticalDivider(
+                color = Color.DarkGray,
+                thickness = 1.dp,
+                modifier = modifier
+                    .height(120.dp)
+                    .padding(2.dp))
+            Text(
+                stringResource(R.string.last_results),
+                color = Color.White,
+                fontSize = 14.sp,
+                modifier = modifier
+                    .weight(0.3f)
+            )
             Column(
-                modifier = Modifier.height(100.dp)
+                modifier = Modifier
+                    .height(120.dp)
+                    .weight(0.3f)
             )
             {
                 for (result in lastResults)
                 {
-                    Text(stringResource(R.string.roulette_result_money, result), color = Color.White, fontSize = 12.sp)
+                    Text(stringResource(R.string.result_money, result), color = Color.White, fontSize = 12.sp)
                 }
             }
         }
-        TextField(
-            value = betText.toString(),
-            label = { Text("Enter Your bet amount", color = Color.LightGray, fontSize = 24.sp) },
-            textStyle = TextStyle(color = Color.DarkGray, fontSize = 24.sp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                errorContainerColor = Color.Red.copy(alpha = 0.1f)
-            ),
-            onValueChange = onBetChange,
-            singleLine = true,
-            isError = checkTextError(betText.toString()),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(20.dp)
-        )
 
+        var jobs = mutableListOf<Job>()
+        var currentSlot by remember { mutableIntStateOf(currentSlotSpinning) }
         val scope = rememberCoroutineScope()
-        var currentSlotSpinning by remember { mutableIntStateOf(0) }
-        val slot1BeginOffset = remember { Animatable(0f) }
-        val slot1EndOffset = remember { Animatable(-300f) }
-        val slot2BeginOffset = remember { Animatable(0f) }
-        val slot2EndOffset = remember { Animatable(-300f) }
-        val slot3BeginOffset = remember { Animatable(0f) }
-        val slot3EndOffset = remember { Animatable(-300f) }
         LaunchedEffect(slotsSpun)
         {
-            if(slotsSpun)
-            {
-                if(currentSlotSpinning == 0) {
-                    scope.launch {
-                        slot1BeginOffset.animateTo(
-                            targetValue = 300f,
-                            animationSpec = tween(
-                                durationMillis = 2000,
-                                easing = FastOutSlowInEasing
-                            )
+            if (slotsSpun) {
+                jobs += scope.launch {
+                    slot1BeginOffset.animateTo(
+                        targetValue = 300f,
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = EaseOut
                         )
-                    }
-                    scope.launch {
-                        slot1EndOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(
-                                durationMillis = 2000,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                    }
-                    currentSlotSpinning = 1
+                    )
                 }
-                else if(currentSlotSpinning == 1) {
-                    scope.launch {
-                        slot2BeginOffset.animateTo(
-                            targetValue = 300f,
-                            animationSpec = tween(
-                                durationMillis = 2000,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                    }
-                    scope.launch {
-                        slot2EndOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(
-                                durationMillis = 2000,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                    }
-
-                    currentSlotSpinning = 2
-                }
-                else
-                {
-                    scope.launch {
-                        slot3BeginOffset.animateTo(
-                            targetValue = 300f,
-                            animationSpec = tween(
-                                durationMillis = 2000,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                    }
-                    scope.launch {
-                        slot3EndOffset.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(
-                                durationMillis = 2000,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                    }
+                jobs += scope.launch {
+                    slot1EndOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = EaseOut
+                        ),
+                    )
                 }
             }
 
-            currentSlotSpinning = 0
-            onSpinFinished()
-            slot1BeginOffset.snapTo(0f)
-            slot1EndOffset.snapTo(-300f)
-            slot2BeginOffset.snapTo(0f)
-            slot2EndOffset.snapTo(-300f)
-            slot3BeginOffset.snapTo(0f)
-            slot3EndOffset.snapTo(-300f)
+            if (slotsSpun)
+            {
+                jobs += scope.launch {
+                    slot2BeginOffset.animateTo(
+                        targetValue = 300f,
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = EaseOut,
+                            delayMillis = 1000
+                        )
+                    )
+                }
+                jobs += scope.launch {
+                    slot2EndOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = EaseOut,
+                            delayMillis = 1000
+                        )
+                    )
+                }
+            }
 
+            if(slotsSpun)
+            {
+                jobs += scope.launch {
+                    slot3BeginOffset.animateTo(
+                        targetValue = 300f,
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = EaseOut,
+                            delayMillis = 2000
+                        )
+                    )
+                }
+                jobs += scope.launch {
+                    slot3EndOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = EaseIn,
+                            delayMillis = 2000
+                        )
+                    )
+                }
+
+                jobs.joinAll()
+
+                onSpinFinished()
+            }
         }
         Row(
             modifier = modifier
@@ -220,6 +242,7 @@ fun SlotsScreen(
                     contentDescription = "roulette game",
                     modifier = modifier
                         .fillMaxWidth()
+                        .padding(4.dp)
                         .size(100.dp)
                         .offset { IntOffset(0, slot1BeginOffset.value.toInt()) }
                 )
@@ -229,7 +252,7 @@ fun SlotsScreen(
                     contentDescription = "roulette game",
                     modifier = modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(4.dp)
                         .size(100.dp)
                         .offset { IntOffset(0, slot1EndOffset.value.toInt()) }
                 )
@@ -248,6 +271,7 @@ fun SlotsScreen(
                     contentDescription = "roulette game",
                     modifier = modifier
                         .fillMaxWidth()
+                        .padding(4.dp)
                         .size(100.dp)
                         .offset { IntOffset(0, slot2BeginOffset.value.toInt()) }
                 )
@@ -257,7 +281,7 @@ fun SlotsScreen(
                     contentDescription = "roulette game",
                     modifier = modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(4.dp)
                         .size(100.dp)
                         .offset { IntOffset(0, slot2EndOffset.value.toInt()) }
                 )
@@ -276,6 +300,7 @@ fun SlotsScreen(
                     contentDescription = "roulette game",
                     modifier = modifier
                         .fillMaxWidth()
+                        .padding(4.dp)
                         .size(100.dp)
                         .offset { IntOffset(0, slot3BeginOffset.value.toInt()) }
                 )
@@ -285,7 +310,7 @@ fun SlotsScreen(
                     contentDescription = "roulette game",
                     modifier = modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(4.dp)
                         .size(100.dp)
                         .offset { IntOffset(0, slot3EndOffset.value.toInt()) }
                 )
@@ -312,7 +337,7 @@ fun SlotsScreenPreview()
     {
         Surface()
         {
-            SlotsScreen({},{false},{}, {},0f)
+            SlotsScreen({},{false},{}, {}, {},"")
         }
     }
 }

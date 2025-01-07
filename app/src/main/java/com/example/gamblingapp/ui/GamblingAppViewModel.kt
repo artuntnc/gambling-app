@@ -1,5 +1,8 @@
 package com.example.gamblingapp.ui
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -128,7 +131,7 @@ class GamblingAppViewModel : ViewModel()
         if (!_appState.value.rouletteSpun)
         {
             _appState.update { currentState ->
-                currentState.copy(chosenRouletteBet = bet.toFloat())
+                currentState.copy(chosenRouletteBet = bet)
             }
         }
     }
@@ -143,12 +146,21 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
+    fun onUpdateAngle(newAngle: Float)
+    {
+        _appState.update { currentState ->
+            currentState.copy(rouletteDegree = newAngle)
+        }
+    }
+
     fun onRouletteSpinClick()
     {
         if (!_appState.value.rouletteSpun)
         {
-            val betAmount = _appState.value.chosenRouletteBet
+            val betAmount = _appState.value.chosenRouletteBet.toFloat()
             val currentBalance = _appState.value.money
+
+            val startDegree = _appState.value.rouletteDegree
 
             // Validate bet amount
             if (betAmount <= 0) {
@@ -166,23 +178,31 @@ class GamblingAppViewModel : ViewModel()
                 currentState.copy(rouletteSpun = true)
             }
             _appState.update { currentState ->
-                currentState.copy(targetRouletteDegree = Random.nextFloat() * 360f + 720f)
+                currentState.copy(targetRouletteDegree = startDegree + Random.nextFloat() * 360f + 720f)
             }
             _appState.update { currentState ->
-                currentState.copy(winningSector = getSector(_appState.value.targetRouletteDegree))
+                currentState.copy(rotation = Animatable(startDegree))
+            }
+            _appState.update { currentState ->
+                currentState.copy(winningSector = getSector(_appState.value.targetRouletteDegree%360))
+            }
+            _appState.update { currentState ->
+                currentState.copy(money = currentBalance - betAmount)
             }
         }
     }
 
-    fun updateRouletteState(newAngle: Float)
+    fun updateRouletteState()
     {
-        val betAmount = _appState.value.chosenRouletteBet
+        val betAmount = _appState.value.chosenRouletteBet.toFloat()
         val currentBalance = _appState.value.money
+
+        val targetDegree = _appState.value.targetRouletteDegree
 
         val (number, color) = _appState.value.winningSector
         val winnings = when {
             _appState.value.chosenRouletteColor == color && (color == Color.Green || number == 0) -> betAmount * 14f
-            _appState.value.chosenRouletteColor == color -> betAmount * 2f
+            (_appState.value.chosenRouletteColor == color) || (number == _appState.value.chosenRouletteNumber)-> betAmount * 2f
             else -> 0f
         }
 
@@ -191,7 +211,7 @@ class GamblingAppViewModel : ViewModel()
         }
 
         _appState.update { currentState ->
-            currentState.copy(rouletteDegree = newAngle%360)
+            currentState.copy(rouletteDegree = targetDegree%360)
         }
 
         _appState.update { currentState ->
@@ -208,12 +228,12 @@ class GamblingAppViewModel : ViewModel()
 
     private fun getSector(degrees: Float): Pair<Int,Color> {
         val sectors = arrayOf(
-            Pair(32, Color.Red), Pair(15, Color.Black), Pair(19, Color.Red), Pair(4, Color.Black), Pair(21, Color.Red), Pair(2, Color.Black), Pair(25, Color.Red), Pair(17, Color.Black), Pair(34, Color.Red), Pair(6, Color.Black), Pair(27, Color.Red), Pair(13, Color.Black), Pair(36, Color.Red), Pair(11, Color.Black), Pair(30, Color.Red), Pair(8, Color.Black), Pair(23, Color.Red), Pair(10, Color.Black), Pair(5, Color.Red), Pair(24, Color.Black), Pair(16, Color.Red), Pair(33, Color.Black), Pair(1, Color.Red), Pair(20, Color.Black), Pair(14, Color.Red), Pair(31, Color.Black), Pair(9, Color.Red), Pair(22, Color.Black), Pair(18, Color.Red), Pair(29, Color.Black), Pair(17, Color.Red), Pair(28, Color.Black), Pair(12, Color.Red), Pair(35, Color.Black), Pair(3, Color.Red), Pair(26, Color.Black), Pair(0, Color.Green)
+            Pair(32, Color.Red), Pair(15, Color.Black), Pair(19, Color.Red), Pair(4, Color.Black), Pair(21, Color.Red), Pair(2, Color.Black), Pair(25, Color.Red), Pair(17, Color.Black), Pair(34, Color.Red), Pair(6, Color.Black), Pair(27, Color.Red), Pair(13, Color.Black), Pair(36, Color.Red), Pair(11, Color.Black), Pair(30, Color.Red), Pair(8, Color.Black), Pair(23, Color.Red), Pair(10, Color.Black), Pair(5, Color.Red), Pair(24, Color.Black), Pair(16, Color.Red), Pair(33, Color.Black), Pair(1, Color.Red), Pair(20, Color.Black), Pair(14, Color.Red), Pair(31, Color.Black), Pair(9, Color.Red), Pair(22, Color.Black), Pair(18, Color.Red), Pair(29, Color.Black), Pair(7, Color.Red), Pair(28, Color.Black), Pair(12, Color.Red), Pair(35, Color.Black), Pair(3, Color.Red), Pair(26, Color.Black), Pair(0, Color.Green)
         )
 
         for (i in sectors.indices) {
-            val start = i * (360f / sectors.size)
-            val end = start + (360f / sectors.size)
+            val start = i * (360f / sectors.size) + sectors.size/2
+            val end = start + (360f / sectors.size) + sectors.size/2
             if (degrees > start.toInt() && degrees < end.toInt()) {
                 return sectors[i]
             }
@@ -228,8 +248,17 @@ class GamblingAppViewModel : ViewModel()
         if (!_appState.value.slotsSpun)
         {
             _appState.update { currentState ->
-                currentState.copy(chosenSlotsBet = bet.toFloat())
+                currentState.copy(chosenSlotsBet = bet)
             }
+        }
+    }
+
+    fun onUpdateSlot()
+    {
+        val newSlot = (_appState.value.currentSlotSpinning+1)%3
+
+        _appState.update { currentState ->
+            currentState.copy(currentSlotSpinning = newSlot)
         }
     }
 
@@ -237,7 +266,7 @@ class GamblingAppViewModel : ViewModel()
     {
         if (!_appState.value.slotsSpun)
         {
-            val betAmount = _appState.value.chosenSlotsBet
+            val betAmount = _appState.value.chosenSlotsBet.toFloat()
             val currentBalance = _appState.value.money
 
             // Validate bet amount
@@ -250,6 +279,10 @@ class GamblingAppViewModel : ViewModel()
                 _appState.update { currentState ->
                     currentState.copy(slotsError = "Bet amount exceeds your current balance.")
                 }
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(currentSlotSpinning = 0)
             }
 
             _appState.update { currentState ->
@@ -298,14 +331,14 @@ class GamblingAppViewModel : ViewModel()
             }
 
             _appState.update { currentState ->
-                currentState.copy(nextSlot1Id = id3)
+                currentState.copy(nextSlot3Id = id3)
             }
         }
     }
 
     fun updateSlotsState()
     {
-        val betAmount = _appState.value.chosenRouletteBet
+        val betAmount = _appState.value.chosenSlotsBet.toFloat()
         val currentBalance = _appState.value.money
 
         val result1 = _appState.value.nextSlot1Id
@@ -342,19 +375,37 @@ class GamblingAppViewModel : ViewModel()
         }
 
         _appState.update { currentState ->
-            currentState.copy(slot1Id = _appState.value.nextSlot1Id)
+            currentState.copy(slot2Id = _appState.value.nextSlot2Id)
         }
 
         _appState.update { currentState ->
-            currentState.copy(slot1Id = _appState.value.nextSlot1Id)
+            currentState.copy(slot3Id = _appState.value.nextSlot3Id)
         }
 
+        _appState.update { currentState ->
+            currentState.copy(slot1BeginOffset = Animatable(0f))
+        }
+        _appState.update { currentState ->
+            currentState.copy(slot1EndOffset = Animatable(-300f))
+        }
+        _appState.update { currentState ->
+            currentState.copy(slot2BeginOffset = Animatable(0f))
+        }
+        _appState.update { currentState ->
+            currentState.copy(slot2EndOffset = Animatable(-300f))
+        }
+        _appState.update { currentState ->
+            currentState.copy(slot3BeginOffset = Animatable(0f))
+        }
+        _appState.update { currentState ->
+            currentState.copy(slot3EndOffset = Animatable(-300f))
+        }
 
         val lastFiveResults: MutableList<Float> = _appState.value.lastSlotsResults.toMutableList()
         lastFiveResults.add(0, reward)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
-            currentState.copy(lastRouletteResults = lastFiveResults)
+            currentState.copy(lastSlotsResults = lastFiveResults)
         }
     }
 
@@ -365,7 +416,7 @@ class GamblingAppViewModel : ViewModel()
         if (!_appState.value.diceCast)
         {
             _appState.update { currentState ->
-                currentState.copy(chosenDiceBet = bet.toFloat())
+                currentState.copy(chosenDiceBet = bet)
             }
         }
     }
@@ -374,7 +425,7 @@ class GamblingAppViewModel : ViewModel()
     {
         if (!_appState.value.diceCast)
         {
-            val betAmount = _appState.value.chosenDiceBet
+            val betAmount = _appState.value.chosenDiceBet.toFloat()
             val currentBalance = _appState.value.money
 
             // Validate bet amount
@@ -427,7 +478,7 @@ class GamblingAppViewModel : ViewModel()
 
     fun updateDiceState()
     {
-        val betAmount = _appState.value.chosenRouletteBet
+        val betAmount = _appState.value.chosenRouletteBet.toFloat()
         val currentBalance = _appState.value.money
 
         val newPlayerDice = _appState.value.newUserDice
@@ -467,7 +518,7 @@ class GamblingAppViewModel : ViewModel()
         lastFiveResults.add(0, winnings)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
-            currentState.copy(lastRouletteResults = lastFiveResults)
+            currentState.copy(lastDiceResults = lastFiveResults)
         }
     }
 
@@ -478,7 +529,7 @@ class GamblingAppViewModel : ViewModel()
         if (!_appState.value.isGameOver && !_appState.value.blackjackPlayed)
         {
             _appState.update { currentState ->
-                currentState.copy(chosenBlackjackBet = bet.toFloat())
+                currentState.copy(chosenBlackjackBet = bet)
             }
         }
     }
@@ -609,7 +660,7 @@ class GamblingAppViewModel : ViewModel()
     private fun evaluateGameOutcome()
     {
         val balance = _appState.value.money
-        val betAmount = _appState.value.chosenRouletteBet
+        val betAmount = _appState.value.chosenRouletteBet.toFloat()
 
         val playerCards = _appState.value.playerCards
         val dealerCards = _appState.value.dealerCards
@@ -635,7 +686,7 @@ class GamblingAppViewModel : ViewModel()
         lastFiveResults.add(0, betAmount*2)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
-            currentState.copy(lastRouletteResults = lastFiveResults)
+            currentState.copy(lastBlackjackResults = lastFiveResults)
         }
     }
 

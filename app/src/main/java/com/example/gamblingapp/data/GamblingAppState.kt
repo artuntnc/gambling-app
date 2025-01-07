@@ -1,6 +1,9 @@
 package com.example.gamblingapp.data
 
 import android.text.BoringLayout
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import com.example.gamblingapp.R
 
@@ -15,7 +18,7 @@ data class GamblingAppState(
     //sound value
     val soundVolume: Float = 0.5f,
     //music value
-    val musicVolume: Float = 0.5f,
+    val musicVolume: Float = 0.0f,
     //alt theme check
     val altThemeOn: Boolean = false,
     //notifications check
@@ -28,12 +31,16 @@ data class GamblingAppState(
     val lastRouletteResults: List<Float> = listOf(),
     //chosen color for roulette game
     val chosenRouletteColor: Color = Color.Red,
+    //chosen color for roulette game
+    val chosenRouletteNumber: Int = 2,
     //bet set by the user
-    val chosenRouletteBet: Float = 0.0f,
+    val chosenRouletteBet: String = "",
     //current tilt of the roulette
     val rouletteDegree: Float = 0f,
     //target tilt of the roulette
     val targetRouletteDegree: Float = 0f,
+    //rotation value for animating
+    val rotation: Animatable<Float, AnimationVector1D> = Animatable(0f),
     //roulette error message
     val rouletteError: String = "",
     //check for whether the roulette has begun spinning
@@ -48,7 +55,21 @@ data class GamblingAppState(
     //check for whether the slots have begun spinning
     val slotsSpun: Boolean = false,
     //bet set by the user
-    val chosenSlotsBet: Float = 0.0f,
+    val chosenSlotsBet: String = "",
+    //which slot to animate
+    val currentSlotSpinning: Int  = 0,
+    //beginning offset for a slot 1
+    val slot1BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    //ending offset for a slot 1
+    val slot1EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
+    //beginning offset for a slot 2
+    val slot2BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    //ending offset for a slot 2
+    val slot2EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
+    //beginning offset for a slot 3
+    val slot3BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
+    //ending offset for a slot 3
+    val slot3EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
     //current slot 1
     val slot1Id: Int = R.drawable.slot1cherry,
     //current slot 2
@@ -69,7 +90,7 @@ data class GamblingAppState(
     //check for whether the dice have been cast
     val diceCast: Boolean = false,
     //bet set by the user
-    val chosenDiceBet: Float = 0.0f,
+    val chosenDiceBet: String = "",
     //new dice upon a roll
     val newUserDice: Int = R.drawable.dice_1,
     //new dice upon a roll
@@ -84,7 +105,7 @@ data class GamblingAppState(
     //check for whether the user chose to do something
     val blackjackPlayed: Boolean = false,
     //bet set by the user
-    val chosenBlackjackBet: Float = 0.0f,
+    val chosenBlackjackBet: String = "",
     //cards in player's hands
     val playerCards: List<Card> = listOf(),
     //cards in player's hands
