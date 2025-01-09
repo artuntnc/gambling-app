@@ -49,6 +49,7 @@ class SlotActivity : AppCompatActivity() {
 
     private fun spinSlots() {
         spinButton.isEnabled = false
+        BackgroundMusicManager.pauseMusic()
 
         mediaPlayer = MediaPlayer.create(this, R.raw.slotmachinesound).apply {
             isLooping = true
@@ -64,6 +65,7 @@ class SlotActivity : AppCompatActivity() {
                     mediaPlayer?.stop()
                     mediaPlayer?.release()
                     mediaPlayer = null
+                    BackgroundMusicManager.playMusic()
                 }
             }
         }
@@ -131,7 +133,7 @@ class SlotActivity : AppCompatActivity() {
         balanceText.text = "Balance: $$balance"
     }
     override fun onDestroy() {
-        // Activity yok olurken ses çalarken hataları önlemek için MediaPlayer'ı serbest bırakıyoruz
+
         mediaPlayer?.release()
         super.onDestroy()
     }

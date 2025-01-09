@@ -45,6 +45,7 @@ class RouletteActivity : AppCompatActivity() {
         // Bind UI components
         val wheel: ImageView = findViewById(R.id.wheel)
         val spinButton: Button = findViewById(R.id.spinButton)
+
         val betAmountInput: EditText = findViewById(R.id.betAmount)
         val redButton: Button = findViewById(R.id.redButton)
         val blackButton: Button = findViewById(R.id.blackButton)
@@ -64,6 +65,7 @@ class RouletteActivity : AppCompatActivity() {
         spinButton.setOnClickListener {
             val betAmountStr = betAmountInput.text.toString().trim()
             val betAmount = betAmountStr.toIntOrNull()
+            BackgroundMusicManager.pauseMusic()
 
             // Validate bet amount
             if (betAmountStr.isEmpty() || betAmount == null || betAmount <= 0) {
@@ -122,6 +124,7 @@ class RouletteActivity : AppCompatActivity() {
             override fun onAnimationEnd(animation: Animation?) {
                 val sector = getSector(360 - (degree % 360))
                 onResult(sector)
+                BackgroundMusicManager.playMusic()
             }
 
             override fun onAnimationRepeat(animation: Animation?) {}
