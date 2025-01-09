@@ -7,11 +7,12 @@ import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.RotateAnimation
 import android.widget.*
+import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.random.Random
 
 class RouletteActivity : AppCompatActivity() {
-
+    private lateinit var mediaPlayer: MediaPlayer
     private lateinit var sharedPreferences: SharedPreferences
     private var balance: Int = 0
     private val lastFiveResults = mutableListOf<String>()
@@ -32,6 +33,8 @@ class RouletteActivity : AppCompatActivity() {
     private var selectedColor: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.roulettespin)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_roulette)
 
@@ -75,7 +78,7 @@ class RouletteActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please select a color to bet on.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
+            mediaPlayer.start()
             // Start the spin
             spin(wheel) { winningSector ->
                 val (number, color) = winningSector.split(" ")
@@ -93,6 +96,8 @@ class RouletteActivity : AppCompatActivity() {
                 if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
                 lastResultsText.text = lastFiveResults.joinToString("\n")
                 balanceText.text = "Balance: $$balance"
+                mediaPlayer.stop()
+                mediaPlayer.prepare()
             }
         }
     }

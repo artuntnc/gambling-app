@@ -18,6 +18,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
+import android.media.MediaPlayer
+
 
 class BlackjackActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,6 +100,9 @@ fun drawCard(): Card {
 
 @Composable
 fun BlackjackGame() {
+    val context = LocalContext.current
+    val mediaPlayer = remember { MediaPlayer.create(context, R.raw.hitsound) }
+
     val playerCards = remember { mutableStateListOf<Card>() }
     val dealerCards = remember { mutableStateListOf<Card>() }
     val balance = remember { mutableStateOf(1000) }
@@ -105,7 +110,7 @@ fun BlackjackGame() {
     var gameOver by remember { mutableStateOf(false) }
     var busted by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
+
 
     if (playerCards.isEmpty() && dealerCards.isEmpty()) {
         // Start the game
@@ -169,11 +174,13 @@ fun BlackjackGame() {
         // Balance Display
         Text(text = "Balance: $${balance.value}", fontSize = 20.sp)
 
+
         // Player Actions
         if (isPlayerTurn && !gameOver) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(onClick = {
                     playerCards.add(drawCard())
+                    mediaPlayer.start()
                     if (calculateHandTotal(playerCards) > 21) {
                         gameOver = true
                         busted = true
@@ -186,6 +193,7 @@ fun BlackjackGame() {
                     isPlayerTurn = false
                     while (calculateHandTotal(dealerCards) < 17) {
                         dealerCards.add(drawCard())
+                        mediaPlayer.start()
                     }
                     evaluateGameOutcome(playerCards, dealerCards, balance)
                     gameOver = true

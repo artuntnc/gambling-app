@@ -1,5 +1,6 @@
 package com.example.gamblingapp
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +18,7 @@ class SlotActivity : AppCompatActivity() {
     private lateinit var balanceText: TextView
 
     private var balance = 1000
+    private var mediaPlayer: MediaPlayer? = null
 
     private val images = listOf(
         R.drawable.slot1cherry,  // Cherry
@@ -48,12 +50,20 @@ class SlotActivity : AppCompatActivity() {
     private fun spinSlots() {
         spinButton.isEnabled = false
 
+        mediaPlayer = MediaPlayer.create(this, R.raw.slotmachinesound).apply {
+            isLooping = true
+            start()
+        }
+
         val results = IntArray(3) { Random.nextInt(images.size) }
 
         animateSlot(slot1, results[0]) {
             animateSlot(slot2, results[1]) {
                 animateSlot(slot3, results[2]) {
                     calculateResult(results[0], results[1], results[2])
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
+                    mediaPlayer = null
                 }
             }
         }
@@ -119,5 +129,10 @@ class SlotActivity : AppCompatActivity() {
 
     private fun updateBalanceText() {
         balanceText.text = "Balance: $$balance"
+    }
+    override fun onDestroy() {
+        // Activity yok olurken ses çalarken hataları önlemek için MediaPlayer'ı serbest bırakıyoruz
+        mediaPlayer?.release()
+        super.onDestroy()
     }
 }
