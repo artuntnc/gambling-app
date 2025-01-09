@@ -12,8 +12,19 @@ data class GamblingAppState(
     val username: String = "",
     //current user's password
     val password: String = "",
+    //current user's password
+    val email: String = "",
     //current user's money
     val money: Float = 1000.0f,
+    //user value for saving data
+    val user: User = User(
+        fullName = "",
+        balance = -1f,
+        password = "",
+        email = "",
+        birthDate = "",
+        pesel = ""
+    ),
 
     //sound value
     val soundVolume: Float = 0.5f,
@@ -26,6 +37,8 @@ data class GamblingAppState(
 
     //bool for displaying the top bar with money and user
     val hideTopBar: Boolean = true,
+    //bool for displaying coming soon pop-up
+    val showComingSoonDialog: Boolean = false,
 
     //last results in roulette game
     val lastRouletteResults: List<Float> = listOf(),

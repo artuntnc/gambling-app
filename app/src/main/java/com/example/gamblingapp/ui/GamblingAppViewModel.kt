@@ -1,23 +1,32 @@
 package com.example.gamblingapp.ui
 
+import android.text.InputType
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.gamblingapp.R
 import com.example.gamblingapp.data.Card
 import com.example.gamblingapp.data.GamblingAppState
 import com.example.gamblingapp.data.LoginState
 import com.example.gamblingapp.data.RegisterState
+import com.example.gamblingapp.data.User
+import com.example.gamblingapp.data.UsersRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-class GamblingAppViewModel : ViewModel()
+class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewModel()
 {
     private val _appState = MutableStateFlow(GamblingAppState())
     val appState: StateFlow<GamblingAppState> = _appState.asStateFlow()
@@ -44,6 +53,15 @@ class GamblingAppViewModel : ViewModel()
 
         _appState.update { currentState ->
             currentState.copy(hideTopBar = !hideTopBarCopy)
+        }
+    }
+
+    fun changeComingSoonState()
+    {
+        val comingSoonCopy = _appState.value.showComingSoonDialog
+
+        _appState.update { currentState ->
+            currentState.copy(hideTopBar = !comingSoonCopy)
         }
     }
 
@@ -98,25 +116,96 @@ class GamblingAppViewModel : ViewModel()
 
     fun checkIfInputIncorrect(text: String, input: inputType): Boolean
     {
-        return when(input) {
-            inputType.Email -> false
-            inputType.Password -> false
-            inputType.Date -> false
-            inputType.FullName -> false
-            inputType.Pesel -> false
-            inputType.Money -> false
+        val regex: Regex = when(input) {
+            inputType.Email -> """^[a-zA-Z0-9]+([._-][0-9a-zA-Z]+)*@[a-zA-Z0-9]+([.-][0-9a-zA-Z]+)*\.[a-zA-Z]{2,}$""".toRegex()
+            inputType.Password -> """^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$""".toRegex()
+            inputType.Date -> """^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$""".toRegex()
+            inputType.FullName -> """^[a-z]([-']?[a-z]+)*( [a-z]([-']?[a-z]+)*)+$""".toRegex()
+            inputType.Pesel -> """^[0-9]{2}([02468]1|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}$""".toRegex()
+            inputType.Money -> """^\d+(?:\.\d{1,2})?$""".toRegex()
+        }
+
+        if(input == inputType.Money)
+        {
+            return !(regex.matches(text) && _appState.value.money >= text.toFloat())
+        }
+
+        return !regex.matches(text)
+    }
+
+    //gets user data from the database, fails for incorrect data or if specified user doesn't exist
+    suspend fun getUserData(): Boolean
+    {
+        val email = _loginState.value.email
+        val password = _loginState.value.password
+
+        if(!checkIfInputIncorrect(email, inputType.Email) || !checkIfInputIncorrect(password, inputType.Password))
+            return false
+
+        val userFlow = usersRepository.getUserStream(email,password)
+
+        if(userFlow.count() == 0)
+            return false
+
+        val user = userFlow.first()
+
+        _appState.update { currentState ->
+            currentState.copy(username = user.fullName, email = user.email, money = user.balance)
         }
 
         return true
     }
 
-    fun getUserData(): Boolean
+    suspend fun setUserData(): Boolean
     {
-        //should get data from the computer for now just set money
+        val email = _registerState.value.email
+        val password = _registerState.value.email
+        val birthDate = _registerState.value.email
+        val pesel = _registerState.value.email
+        val fullName = _registerState.value.email
+
+        if(!checkIfInputIncorrect(email, inputType.Email) || !checkIfInputIncorrect(password, inputType.Password) || !checkIfInputIncorrect(birthDate, inputType.Date) || !checkIfInputIncorrect(pesel, inputType.Pesel) || !checkIfInputIncorrect(fullName, inputType.FullName))
+            return false
+
+        val userEmailCheck = usersRepository.getUserEmailStream(email)
+        val userPeselCheck = usersRepository.getUserPeselStream(pesel)
+
+        if(userEmailCheck.count() != 0 || userPeselCheck.count() != 0)
+            return false
+
         _appState.update { currentState ->
-            currentState.copy(money = 1000.0f)
+            currentState.copy(username = fullName, email = email, money = 1000f)
         }
+
+        val currentUser = User(
+            fullName = fullName,
+            balance = 1000f,
+            password = password,
+            email = email,
+            birthDate = birthDate,
+            pesel = pesel
+        )
+
+        usersRepository.insert(currentUser)
+        _appState.update { currentState ->
+            currentState.copy(user = currentUser)
+        }
+
         return true
+    }
+
+    private suspend fun saveBalance()
+    {
+        val currentUser = _appState.value.user
+
+        usersRepository.update(currentUser.copy(balance = _appState.value.money))
+    }
+
+    suspend fun savePassword()
+    {
+        val currentUser = _appState.value.user
+
+        usersRepository.update(currentUser.copy(password = _appState.value.password))
     }
 
     fun resetLogin()
@@ -155,9 +244,11 @@ class GamblingAppViewModel : ViewModel()
 
     fun onRouletteSpinClick()
     {
-        if (!_appState.value.rouletteSpun)
+        val bet = _appState.value.chosenRouletteBet
+
+        if (!_appState.value.rouletteSpun && !checkIfInputIncorrect(bet, inputType.Money))
         {
-            val betAmount = _appState.value.chosenRouletteBet.toFloat()
+            val betAmount = bet.toFloat()
             val currentBalance = _appState.value.money
 
             val startDegree = _appState.value.rouletteDegree
@@ -192,7 +283,7 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
-    fun updateRouletteState()
+    suspend fun updateRouletteState()
     {
         val betAmount = _appState.value.chosenRouletteBet.toFloat()
         val currentBalance = _appState.value.money
@@ -209,6 +300,7 @@ class GamblingAppViewModel : ViewModel()
         _appState.update { currentState ->
             currentState.copy(money = currentBalance + winnings - betAmount)
         }
+        saveBalance()
 
         _appState.update { currentState ->
             currentState.copy(rouletteDegree = targetDegree%360)
@@ -264,9 +356,11 @@ class GamblingAppViewModel : ViewModel()
 
     fun onSlotsSpinClick()
     {
-        if (!_appState.value.slotsSpun)
+        val bet = _appState.value.chosenSlotsBet
+
+        if (!_appState.value.slotsSpun && !checkIfInputIncorrect(bet, inputType.Money))
         {
-            val betAmount = _appState.value.chosenSlotsBet.toFloat()
+            val betAmount = bet.toFloat()
             val currentBalance = _appState.value.money
 
             // Validate bet amount
@@ -336,7 +430,7 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
-    fun updateSlotsState()
+    suspend fun updateSlotsState()
     {
         val betAmount = _appState.value.chosenSlotsBet.toFloat()
         val currentBalance = _appState.value.money
@@ -365,6 +459,7 @@ class GamblingAppViewModel : ViewModel()
         _appState.update { currentState ->
             currentState.copy(money = currentBalance + reward - betAmount)
         }
+        saveBalance()
 
         _appState.update { currentState ->
             currentState.copy(slotsSpun = false)
@@ -423,9 +518,11 @@ class GamblingAppViewModel : ViewModel()
 
     fun onDiceRollClick()
     {
-        if (!_appState.value.diceCast)
+        val bet = _appState.value.chosenDiceBet
+
+        if (!_appState.value.diceCast && !checkIfInputIncorrect(bet, inputType.Money))
         {
-            val betAmount = _appState.value.chosenDiceBet.toFloat()
+            val betAmount = bet.toFloat()
             val currentBalance = _appState.value.money
 
             // Validate bet amount
@@ -476,7 +573,7 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
-    fun updateDiceState()
+    suspend fun updateDiceState()
     {
         val betAmount = _appState.value.chosenRouletteBet.toFloat()
         val currentBalance = _appState.value.money
@@ -505,6 +602,7 @@ class GamblingAppViewModel : ViewModel()
         _appState.update { currentState ->
             currentState.copy(money = currentBalance + winnings - betAmount)
         }
+        saveBalance()
 
         _appState.update { currentState ->
             currentState.copy(diceCast = false)
@@ -526,7 +624,7 @@ class GamblingAppViewModel : ViewModel()
 
     fun onBlackjackBetChange(bet: String)
     {
-        if (!_appState.value.isGameOver && !_appState.value.blackjackPlayed)
+        if (_appState.value.isGameOver && !_appState.value.blackjackPlayed)
         {
             _appState.update { currentState ->
                 currentState.copy(chosenBlackjackBet = bet)
@@ -563,7 +661,7 @@ class GamblingAppViewModel : ViewModel()
         }
     }
 
-    fun onBlackjackStandClick()
+    suspend fun onBlackjackStandClick()
     {
         if (!_appState.value.blackjackPlayed)
         {
@@ -598,21 +696,33 @@ class GamblingAppViewModel : ViewModel()
 
     fun onBlackjackPlayAgainClick()
     {
-        val playerCards = listOf(drawCard(),drawCard())
-        val dealerCards = listOf(drawCard(),drawCard())
+        val bet = _appState.value.chosenBlackjackBet
 
-        _appState.update { currentState ->
-            currentState.copy(playerCards = playerCards)
-        }
-        _appState.update { currentState ->
-            currentState.copy(dealerCards = dealerCards)
-        }
+        if (!checkIfInputIncorrect(bet, inputType.Money))
+        {
+            val playerCards = listOf(drawCard(), drawCard())
+            val dealerCards = listOf(drawCard(), drawCard())
 
-        _appState.update { currentState ->
-            currentState.copy(isGameOver = false)
-        }
-        _appState.update { currentState ->
-            currentState.copy(isGameOver = true)
+            _appState.update { currentState ->
+                currentState.copy(playerCards = playerCards)
+            }
+            _appState.update { currentState ->
+                currentState.copy(dealerCards = dealerCards)
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(isGameOver = false)
+            }
+            _appState.update { currentState ->
+                currentState.copy(isPlayerTurn = true)
+            }
+
+            _appState.update { currentState ->
+                currentState.copy(playerTotal = calculateHandTotal(_appState.value.playerCards))
+            }
+            _appState.update { currentState ->
+                currentState.copy(dealerTotal = calculateHandTotal(_appState.value.dealerCards))
+            }
         }
     }
 
@@ -657,10 +767,10 @@ class GamblingAppViewModel : ViewModel()
         return total
     }
 
-    private fun evaluateGameOutcome()
+    private suspend fun evaluateGameOutcome()
     {
         val balance = _appState.value.money
-        val betAmount = _appState.value.chosenRouletteBet.toFloat()
+        val betAmount = _appState.value.chosenBlackjackBet.toFloat()
 
         val playerCards = _appState.value.playerCards
         val dealerCards = _appState.value.dealerCards
@@ -681,6 +791,7 @@ class GamblingAppViewModel : ViewModel()
                 }
             }
         }
+        saveBalance()
 
         val lastFiveResults: MutableList<Float> = _appState.value.lastBlackjackResults.toMutableList()
         lastFiveResults.add(0, betAmount*2)

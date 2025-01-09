@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +46,8 @@ import com.example.gamblingapp.ui.SettingsScreen
 import com.example.gamblingapp.ui.SlotsScreen
 import com.example.gamblingapp.ui.StoreScreen
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 enum class AppRoutes(@StringRes val title: Int)
 {
@@ -106,6 +109,9 @@ fun GamblingApp(
     context: Context
 )
 {
+    //scope for managing memory
+    val coroutineScope = rememberCoroutineScope()
+
     //app state that controls the app
     val appState by gamblingAppViewModel.appState.collectAsState()
     val loginState by gamblingAppViewModel.loginState.collectAsState()
@@ -117,6 +123,7 @@ fun GamblingApp(
     musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
     musicPlayer.start()
 
+    //main app component with a top bar and navigation
     Scaffold(
         topBar = { if(!appState.hideTopBar){ GamblingAppBar({ navController.navigate(AppRoutes.Settings.name) }, appState.money.toString() + "$") }}
     ) { innerPadding ->
@@ -141,10 +148,11 @@ fun GamblingApp(
                         onValueChangePassword = { password -> gamblingAppViewModel.setLoginPassword(password) },
                         onValueChangeEmail = { email -> gamblingAppViewModel.setLoginEmail(email) },
                         onRegister = {
-                                        navController.navigate(AppRoutes.Register.name)
                                         gamblingAppViewModel.resetLogin()
+                                        navController.navigate(AppRoutes.Register.name)
                                      },
                         onLogin = {
+                                    coroutineScope.launch {
                                         if(gamblingAppViewModel.getUserData())
                                         {
                                             gamblingAppViewModel.changeTopBarState()
@@ -153,6 +161,11 @@ fun GamblingApp(
                                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                             }
                                         }
+                                        else
+                                        {
+                                            //show incorrect input message
+                                        }
+                                    }
                                   },
                         onPasswordReset = {  }, //to implement a password reset mechanic
                         checkEmailError = { email -> gamblingAppViewModel.checkIfInputIncorrect(email, GamblingAppViewModel.inputType.Email) },
@@ -164,12 +177,27 @@ fun GamblingApp(
                 }
                 composable(route = AppRoutes.Register.name) {
                     RegisterScreen(
-                        onValueChangeFullName = { password -> gamblingAppViewModel.setLoginPassword(password) },
-                        onValueChangePassword = { password -> gamblingAppViewModel.setLoginPassword(password) },
-                        onValueChangeEmail = { email -> gamblingAppViewModel.setLoginPassword(email) },
-                        onValueChangeDate = { email -> gamblingAppViewModel.setLoginPassword(email) },
-                        onValueChangePesel = { email -> gamblingAppViewModel.setLoginPassword(email) },
-                        onRegister = { }, //Create a mechanism for registering accounts
+                        onValueChangeFullName = { name -> gamblingAppViewModel.setRegisterFullName(name) },
+                        onValueChangePassword = { password -> gamblingAppViewModel.setRegisterPassword(password) },
+                        onValueChangeEmail = { email -> gamblingAppViewModel.setRegisterEmail(email) },
+                        onValueChangeDate = { date -> gamblingAppViewModel.setRegisterBirthDate(date) },
+                        onValueChangePesel = { pesel -> gamblingAppViewModel.setRegisterPesel(pesel) },
+                        onRegister = {
+                                        coroutineScope.launch {
+                                            if(gamblingAppViewModel.setUserData())
+                                            {
+                                                gamblingAppViewModel.changeTopBarState()
+                                                navController.navigate(AppRoutes.GameMenu.name)
+                                                {
+                                                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //show incorrect input message
+                                            }
+                                        }
+                                     },
                         checkFullNameError = { fullName -> gamblingAppViewModel.checkIfInputIncorrect(fullName, GamblingAppViewModel.inputType.FullName) },
                         checkPasswordError = { password -> gamblingAppViewModel.checkIfInputIncorrect(password, GamblingAppViewModel.inputType.Password) },
                         checkEmailError = { email -> gamblingAppViewModel.checkIfInputIncorrect(email, GamblingAppViewModel.inputType.Email) },
@@ -190,7 +218,9 @@ fun GamblingApp(
                             onDiceClick = { navController.navigate(AppRoutes.Dice.name) },
                             onSlotsClick = { navController.navigate(AppRoutes.Slots.name) },
                             onShopClick = { navController.navigate(AppRoutes.Money.name) },
-                            onComingSoonClick = {  }, //Implement a dialog box saying "Updates coming soon!"
+                            onComingSoonClick = { gamblingAppViewModel.changeComingSoonState() },
+                            onDismissRequest = { gamblingAppViewModel.changeComingSoonState() },
+                            showComingSoon = appState.showComingSoonDialog,
                             modifier = Modifier
                         )
                 }
@@ -229,7 +259,11 @@ fun GamblingApp(
                         onGreenClick = { gamblingAppViewModel.onRouletteButtonClick(Color.Green)},
                         onSpinClick = { gamblingAppViewModel.onRouletteSpinClick()},
                         onUpdateAngle = { angle -> gamblingAppViewModel.onUpdateAngle(angle)},
-                        onSpinFinished = { gamblingAppViewModel.updateRouletteState()},
+                        onSpinFinished = {
+                                            coroutineScope.launch {
+                                                gamblingAppViewModel.updateRouletteState()
+                                            }
+                                        },
                         betText = appState.chosenRouletteBet,
                         lastResults = appState.lastRouletteResults,
                         rouletteSpun = appState.rouletteSpun,
@@ -244,7 +278,11 @@ fun GamblingApp(
                         onBetChange = { bet -> gamblingAppViewModel.onDiceBetChange(bet)},
                         checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
                         onDiceRollClick = { gamblingAppViewModel.onDiceRollClick()},
-                        onDiceRollFinished = { gamblingAppViewModel.updateDiceState()},
+                        onDiceRollFinished = {
+                                                coroutineScope.launch {
+                                                    gamblingAppViewModel.updateDiceState()
+                                                }
+                                             },
                         betText = appState.chosenDiceBet,
                         lastResults = appState.lastDiceResults,
                         diceCast = appState.diceCast,
@@ -259,7 +297,11 @@ fun GamblingApp(
                             onBetChange = { bet -> gamblingAppViewModel.onBlackjackBetChange(bet)},
                             checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
                             onHitClick = { gamblingAppViewModel.onBlackjackHitClick()},
-                            onStandClick = { gamblingAppViewModel.onBlackjackStandClick()},
+                            onStandClick = {
+                                                coroutineScope.launch {
+                                                    gamblingAppViewModel.onBlackjackStandClick()
+                                                }
+                                            },
                             onPlayAgainClick = { gamblingAppViewModel.onBlackjackPlayAgainClick()},
                             onDrawFinished = { gamblingAppViewModel.updateBlackjackState()},
                             onBustedFinished = { gamblingAppViewModel.updateBlackjackBustedState()},
@@ -285,7 +327,11 @@ fun GamblingApp(
                             )
                         },
                         onSpinClick = { gamblingAppViewModel.onSlotsSpinClick() },
-                        onSpinFinished = { gamblingAppViewModel.updateSlotsState() },
+                        onSpinFinished = {
+                                            coroutineScope.launch {
+                                                gamblingAppViewModel.updateSlotsState()
+                                            }
+                                         },
                         betText = appState.chosenSlotsBet,
                         slotsSpun = appState.slotsSpun,
                         startSlot1 = appState.slot1Id,
@@ -296,7 +342,6 @@ fun GamblingApp(
                         endSlot3 = appState.nextSlot3Id,
                         lastResults = appState.lastSlotsResults,
                         updateSpinningSlot = { gamblingAppViewModel.onUpdateSlot() },
-                        currentSlotSpinning = appState.currentSlotSpinning,
                         slot1BeginOffset = appState.slot1BeginOffset,
                         slot1EndOffset = appState.slot1EndOffset,
                         slot2BeginOffset = appState.slot2BeginOffset,

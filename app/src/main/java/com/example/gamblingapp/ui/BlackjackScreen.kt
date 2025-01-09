@@ -133,7 +133,7 @@ fun BlackjackScreen(
                 dealerCards.forEach { card ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.size(120.dp)
+                        modifier = Modifier.size(80.dp)
                     ) {
                         Image(
                             painter = painterResource(id = card.getImageResource()),
@@ -162,7 +162,7 @@ fun BlackjackScreen(
                 playerCards.forEach { card ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.size(120.dp)
+                        modifier = Modifier.size(80.dp)
                     ) {
                         Image(
                             painter = painterResource(id = card.getImageResource()),

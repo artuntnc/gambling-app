@@ -2,11 +2,8 @@ package com.example.gamblingapp.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -29,11 +26,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -54,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
@@ -68,7 +60,6 @@ fun SlotsScreen(
     updateSpinningSlot: () -> Unit,
     betText: String,
     slotsSpun: Boolean = false,
-    currentSlotSpinning: Int = 0,
     slot1BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
     slot1EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
     slot2BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
@@ -144,7 +135,6 @@ fun SlotsScreen(
         }
 
         var jobs = mutableListOf<Job>()
-        var currentSlot by remember { mutableIntStateOf(currentSlotSpinning) }
         val scope = rememberCoroutineScope()
         LaunchedEffect(slotsSpun)
         {
