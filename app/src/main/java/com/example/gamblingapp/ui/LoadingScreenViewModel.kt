@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class LoadingScreenViewModel(private val usersRepository: UsersRepository) : ViewModel()
+class LoadingScreenViewModel(/*private val usersRepository: UsersRepository*/) : ViewModel()
 {
     private val _uiState = MutableStateFlow(LoadingScreenState())
     val uiState: StateFlow<LoadingScreenState> = _uiState.asStateFlow()

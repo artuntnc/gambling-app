@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -16,9 +17,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.room.Room
+import com.example.gamblingapp.data.GamblingDatabase
+import com.example.gamblingapp.data.UsersRepository
+import com.example.gamblingapp.ui.GamblingAppViewModel
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 class MainActivity : ComponentActivity() {
+    private val db by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            GamblingDatabase::class.java,
+            name = "gambling_database.db"
+        ).build()
+    }
+    private val mainViewModel by viewModels<GamblingAppViewModel> (
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return GamblingAppViewModel(UsersRepository(db)) as T
+                }
+            }
+        }
+    )
+
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class) //This will be important for making the app work on non-standard devices
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +61,7 @@ class MainActivity : ComponentActivity() {
                                 .calculateEndPadding(layoutDirection)
                         )
                 ) {
-                    GamblingApp(context = this)
+                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel)
                 }
             }
         }

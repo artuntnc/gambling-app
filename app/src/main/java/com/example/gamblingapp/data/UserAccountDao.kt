@@ -20,11 +20,20 @@ interface UserDao {
     suspend fun delete(user: User)
 
     @Query("SELECT * from users WHERE email = :email AND password = :password")
-    fun getItem(email: String, password: String): Flow<User>
+    fun getUser(email: String, password: String): Flow<User>
 
     @Query("SELECT * from users WHERE email = :email")
-    fun getItemEmail(email: String): Flow<User>
+    fun getUserEmail(email: String): Flow<User>
 
     @Query("SELECT * from users WHERE pesel = :pesel")
-    fun getItemPesel(pesel: String): Flow<User>
+    fun getUserPesel(pesel: String): Flow<User>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM users WHERE email = :email AND password = :password)")
+    suspend fun doesUserExist(email: String, password: String): Boolean
+
+    @Query("SELECT EXISTS(SELECT 1 FROM users WHERE email = :email)")
+    suspend fun doesUserEmailExist(email: String): Boolean
+
+    @Query("SELECT EXISTS(SELECT 1 FROM users WHERE pesel = :pesel)")
+    suspend fun doesUserPeselExist(pesel: String): Boolean
 }

@@ -79,7 +79,7 @@ fun RegisterScreen(
             label = { Text("Full name", color = Color.LightGray, fontSize = 20.sp) },
             onValueChange = onValueChangeFullName,
             singleLine = true,
-            isError = checkFullNameError(passwordText),
+            isError = checkFullNameError(fullNameText),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
             modifier = Modifier
                 .fillMaxWidth(0.9f)
@@ -133,7 +133,7 @@ fun RegisterScreen(
             label = { Text("Birth Date (DD/MM/YYYY)", color = Color.LightGray, fontSize = 20.sp) },
             onValueChange = onValueChangeDate,
             singleLine = true,
-            isError = checkDateError(passwordText),
+            isError = checkDateError(dateText),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             modifier = Modifier
                 .fillMaxWidth(0.9f)
@@ -151,8 +151,7 @@ fun RegisterScreen(
             label = { Text("Pesel Number", color = Color.LightGray, fontSize = 20.sp) },
             onValueChange = onValueChangePesel,
             singleLine = true,
-            isError = checkPeselError(passwordText),
-            visualTransformation = PasswordVisualTransformation(),
+            isError = checkPeselError(peselText),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             modifier = Modifier
                 .fillMaxWidth(0.9f)

@@ -119,8 +119,8 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val regex: Regex = when(input) {
             inputType.Email -> """^[a-zA-Z0-9]+([._-][0-9a-zA-Z]+)*@[a-zA-Z0-9]+([.-][0-9a-zA-Z]+)*\.[a-zA-Z]{2,}$""".toRegex()
             inputType.Password -> """^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$""".toRegex()
-            inputType.Date -> """^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$""".toRegex()
-            inputType.FullName -> """^[a-z]([-']?[a-z]+)*( [a-z]([-']?[a-z]+)*)+$""".toRegex()
+            inputType.Date -> """^(0?[1-9]|[12][0-9]|3[01])[\/](0?[1-9]|1[012])[\/]\d{4}$""".toRegex()
+            inputType.FullName -> """(^[A-Za-z]{3,16})( ?)([A-Za-z]{3,16})?( ?)?([A-Za-z]{3,16})?( ?)?([A-Za-z]{3,16})""".toRegex()
             inputType.Pesel -> """^[0-9]{2}([02468]1|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}$""".toRegex()
             inputType.Money -> """^\d+(?:\.\d{1,2})?$""".toRegex()
         }
@@ -139,13 +139,13 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val email = _loginState.value.email
         val password = _loginState.value.password
 
-        if(!checkIfInputIncorrect(email, inputType.Email) || !checkIfInputIncorrect(password, inputType.Password))
+        if(checkIfInputIncorrect(email, inputType.Email) || checkIfInputIncorrect(password, inputType.Password))
+            return false
+
+        if(!usersRepository.doesUserExist(email,password))
             return false
 
         val userFlow = usersRepository.getUserStream(email,password)
-
-        if(userFlow.count() == 0)
-            return false
 
         val user = userFlow.first()
 
@@ -159,18 +159,18 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
     suspend fun setUserData(): Boolean
     {
         val email = _registerState.value.email
-        val password = _registerState.value.email
-        val birthDate = _registerState.value.email
-        val pesel = _registerState.value.email
-        val fullName = _registerState.value.email
+        val password = _registerState.value.password
+        val birthDate = _registerState.value.birthDate
+        val pesel = _registerState.value.pesel
+        val fullName = _registerState.value.fullName
 
-        if(!checkIfInputIncorrect(email, inputType.Email) || !checkIfInputIncorrect(password, inputType.Password) || !checkIfInputIncorrect(birthDate, inputType.Date) || !checkIfInputIncorrect(pesel, inputType.Pesel) || !checkIfInputIncorrect(fullName, inputType.FullName))
+        if(checkIfInputIncorrect(email, inputType.Email) || checkIfInputIncorrect(password, inputType.Password) || checkIfInputIncorrect(birthDate, inputType.Date) || checkIfInputIncorrect(pesel, inputType.Pesel) || checkIfInputIncorrect(fullName, inputType.FullName))
             return false
 
-        val userEmailCheck = usersRepository.getUserEmailStream(email)
-        val userPeselCheck = usersRepository.getUserPeselStream(pesel)
+        val emailExists = usersRepository.doesUserEmailExist(email)
+        val peselExists = usersRepository.doesUserPeselExist(pesel)
 
-        if(userEmailCheck.count() != 0 || userPeselCheck.count() != 0)
+        if(emailExists || peselExists)
             return false
 
         _appState.update { currentState ->
@@ -186,7 +186,7 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
             pesel = pesel
         )
 
-        usersRepository.insert(currentUser)
+        usersRepository.insertUser(currentUser)
         _appState.update { currentState ->
             currentState.copy(user = currentUser)
         }
@@ -198,14 +198,14 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
     {
         val currentUser = _appState.value.user
 
-        usersRepository.update(currentUser.copy(balance = _appState.value.money))
+        usersRepository.updateUser(currentUser.copy(balance = _appState.value.money))
     }
 
     suspend fun savePassword()
     {
         val currentUser = _appState.value.user
 
-        usersRepository.update(currentUser.copy(password = _appState.value.password))
+        usersRepository.updateUser(currentUser.copy(password = _appState.value.password))
     }
 
     fun resetLogin()
@@ -778,23 +778,25 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val playerTotal = calculateHandTotal(playerCards)
         val dealerTotal = calculateHandTotal(dealerCards)
 
+        var winnings = betAmount
         when {
             dealerTotal > 21 || playerTotal > dealerTotal -> {
-                _appState.update { currentState ->
-                    currentState.copy(money = balance + betAmount)
-                }
+                winnings *= 2
             }
             playerTotal == dealerTotal -> {} //Draw, no change in balance
             else -> {
-                _appState.update { currentState ->
-                    currentState.copy(money = balance - betAmount)
-                }
+                winnings *= 0
             }
+        }
+
+
+        _appState.update { currentState ->
+            currentState.copy(money = balance + winnings - betAmount)
         }
         saveBalance()
 
         val lastFiveResults: MutableList<Float> = _appState.value.lastBlackjackResults.toMutableList()
-        lastFiveResults.add(0, betAmount*2)
+        lastFiveResults.add(0, winnings)
         if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
         _appState.update { currentState ->
             currentState.copy(lastBlackjackResults = lastFiveResults)
