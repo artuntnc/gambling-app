@@ -17,7 +17,7 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
-        BackgroundMusicManager.initialize(this, R.raw.background_music) // Burada doğru dosya adı kullanıldığından emin olun.
+        BackgroundMusicManager.initialize(this, R.raw.background_music)
         BackgroundMusicManager.playMusic()
         progressBar = findViewById(R.id.progress_bar)
         progressText = findViewById(R.id.progress_text)
