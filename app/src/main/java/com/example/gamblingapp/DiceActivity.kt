@@ -14,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 class DiceGameActivity : ComponentActivity() {
@@ -26,13 +27,13 @@ class DiceGameActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
 fun DiceGameScreen() {
     var playerBalance by remember { mutableStateOf(100) }
     var playerDice by remember { mutableStateOf(1) }
     var computerDice by remember { mutableStateOf(1) }
     var resultMessage by remember { mutableStateOf("Roll the dice to play!") }
+    var isRolling by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -69,18 +70,35 @@ fun DiceGameScreen() {
 
         Button(
             onClick = {
-                val newPlayerDice = rollDice()
-                val newComputerDice = rollDice()
+                isRolling = true
+                resultMessage = "Rolling..."
+            },
+            enabled = playerBalance > 0 && !isRolling
+        ) {
+            Text(text = if (isRolling) "Rolling..." else "Roll Dice")
+        }
 
-                playerDice = newPlayerDice
-                computerDice = newComputerDice
+
+        if (isRolling) {
+            LaunchedEffect(Unit) {
+                repeat(10) {
+                    playerDice = rollDice()
+                    computerDice = rollDice()
+                    delay(100)
+                }
+
+
+                val finalPlayerDice = rollDice()
+                val finalComputerDice = rollDice()
+                playerDice = finalPlayerDice
+                computerDice = finalComputerDice
 
                 when {
-                    newPlayerDice > newComputerDice -> {
+                    finalPlayerDice > finalComputerDice -> {
                         playerBalance += 10
                         resultMessage = "You Win! 🎉"
                     }
-                    newPlayerDice < newComputerDice -> {
+                    finalPlayerDice < finalComputerDice -> {
                         playerBalance -= 10
                         resultMessage = "You Lose! 😞"
                     }
@@ -92,19 +110,16 @@ fun DiceGameScreen() {
                 if (playerBalance <= 0) {
                     resultMessage = "Game Over! You ran out of money."
                 }
-            },
-            enabled = playerBalance > 0
-        ) {
-            Text(text = "Roll Dice")
+
+                isRolling = false
+            }
         }
     }
 }
 
-
 fun rollDice(): Int {
     return Random.nextInt(1, 7)
 }
-
 
 fun getDiceImage(diceNumber: Int): Int {
     return when (diceNumber) {
