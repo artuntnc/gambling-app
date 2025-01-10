@@ -2,6 +2,7 @@ package com.example.gamblingapp
 
 import android.content.Context
 import android.media.MediaPlayer
+import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,6 +30,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -36,11 +39,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.gamblingapp.data.LocalDataStoreManager
+import com.example.gamblingapp.data.UsersRepository
 import com.example.gamblingapp.ui.BlackjackScreen
 import com.example.gamblingapp.ui.DiceScreen
 import com.example.gamblingapp.ui.GamblingAppViewModel
 import com.example.gamblingapp.ui.GameMenuScreen
 import com.example.gamblingapp.ui.LoadingScreen
+import com.example.gamblingapp.ui.LoadingScreenViewModel
 import com.example.gamblingapp.ui.LoginScreen
 import com.example.gamblingapp.ui.RegisterScreen
 import com.example.gamblingapp.ui.RouletteScreen
@@ -107,6 +113,7 @@ fun GamblingAppBar(
 @Composable
 fun GamblingApp(
     gamblingAppViewModel: GamblingAppViewModel = viewModel(),
+    loadingScreenViewModel: LoadingScreenViewModel = viewModel(),
     navController: NavHostController = rememberNavController(),
     context: Context
 )
@@ -141,7 +148,18 @@ fun GamblingApp(
             {
                 composable(route = AppRoutes.Loading.name) {
                     LoadingScreen(
-                        onLoadingEnd = { navController.navigate(AppRoutes.Login.name) },
+                        onLoadingEnd = {
+                                            if(appState.email == "")
+                                            {
+                                                navController.navigate(AppRoutes.Login.name)
+                                            }
+                                            else
+                                            {
+                                                gamblingAppViewModel.getUserFromLocal()
+                                                navController.navigate(AppRoutes.GameMenu.name)
+                                            }
+                                       },
+                        loadingScreenViewModel = loadingScreenViewModel,
                         modifier = Modifier
                     )
                 }
@@ -158,6 +176,7 @@ fun GamblingApp(
                                         if(gamblingAppViewModel.getUserData())
                                         {
                                             gamblingAppViewModel.changeTopBarState()
+                                            loadingScreenViewModel.saveUser(appState.email)
                                             navController.navigate(AppRoutes.GameMenu.name)
                                             {
                                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
@@ -189,6 +208,7 @@ fun GamblingApp(
                                             if(gamblingAppViewModel.setUserData())
                                             {
                                                 gamblingAppViewModel.changeTopBarState()
+                                                loadingScreenViewModel.saveUser(appState.email)
                                                 navController.navigate(AppRoutes.GameMenu.name)
                                                 {
                                                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
@@ -229,17 +249,27 @@ fun GamblingApp(
                 composable(route = AppRoutes.Settings.name) {
                     SettingsScreen(
                         onMusicVolumeChange = {
-                                                change -> gamblingAppViewModel.onMusicVolumeChange(change)
-                                                musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
+                                                    change -> gamblingAppViewModel.onMusicVolumeChange(change)
+                                                    musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
+                                                    loadingScreenViewModel.saveMusicVolume(appState.musicVolume)
                                               },
-                        onSoundVolumeChange = { change -> gamblingAppViewModel.onSoundVolumeChange(change)},
+                        onSoundVolumeChange = {
+                                                    change -> gamblingAppViewModel.onSoundVolumeChange(change)
+                                                    loadingScreenViewModel.saveSoundVolume(appState.soundVolume)},
                         onAccountClick = { /*nav to account settings*/},
-                        onNotificationsClick = { gamblingAppViewModel.onNotificationsClick()},
-                        onThemesClick = { gamblingAppViewModel.onThemesClick()},
+                        onNotificationsClick = {
+                                                    gamblingAppViewModel.onNotificationsClick()
+                                                    loadingScreenViewModel.saveNotifications(appState.areNotificationsOn)
+                                               },
+                        onThemesClick = {
+                                            gamblingAppViewModel.onThemesClick()
+                                            loadingScreenViewModel.saveAltTheme(appState.altThemeOn)
+                                        },
                         onHelpClick = { gamblingAppViewModel.onHelpClick()},
                         onSignOutClick = {
                                             gamblingAppViewModel.changeTopBarState()
                                             gamblingAppViewModel.onSignOutClick()
+                                            loadingScreenViewModel.saveUser("")
                                             navController.navigate(AppRoutes.GameMenu.name)
                                             {
                                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }

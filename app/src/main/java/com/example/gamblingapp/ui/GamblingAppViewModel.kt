@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gamblingapp.R
 import com.example.gamblingapp.data.Card
 import com.example.gamblingapp.data.GamblingAppState
+import com.example.gamblingapp.data.LocalDataStoreManager
 import com.example.gamblingapp.data.LoginState
 import com.example.gamblingapp.data.RegisterState
 import com.example.gamblingapp.data.User
@@ -150,7 +151,7 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val user = userFlow.first()
 
         _appState.update { currentState ->
-            currentState.copy(username = user.fullName, email = user.email, money = user.balance)
+            currentState.copy(username = user.fullName, email = user.email, money = user.balance, user = user)
         }
 
         return true
@@ -211,6 +212,17 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
     fun resetLogin()
     {
         _loginState.value = LoginState()
+    }
+
+    fun getUserFromLocal()
+    {
+        viewModelScope.launch {
+            val user = usersRepository.getUserEmailStream(_appState.value.email).first()
+
+            _appState.update { currentState ->
+                currentState.copy(username = user.fullName, email = user.email, money = user.balance, user = user)
+            }
+        }
     }
 
     //ROULETTE FUNCTIONS
@@ -809,6 +821,7 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         _appState.update { currentState ->
             currentState.copy(musicVolume = newVolume)
         }
+
     }
     fun onSoundVolumeChange(newVolume: Float)
     {
@@ -823,8 +836,6 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         _appState.update { currentState ->
             currentState.copy(areNotificationsOn = !prevNotif)
         }
-
-        //to do
     }
     fun onThemesClick()
     {
@@ -833,8 +844,6 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         _appState.update { currentState ->
             currentState.copy(altThemeOn = !prevTheme)
         }
-
-        //to do
     }
     fun onHelpClick()
     {
@@ -842,6 +851,6 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
     }
     fun onSignOutClick()
     {
-        //save user data
+        //to do
     }
 }

@@ -21,8 +21,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.example.gamblingapp.data.GamblingDatabase
+import com.example.gamblingapp.data.LocalDataStoreManager
 import com.example.gamblingapp.data.UsersRepository
 import com.example.gamblingapp.ui.GamblingAppViewModel
+import com.example.gamblingapp.ui.LoadingScreenViewModel
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -38,6 +40,18 @@ class MainActivity : ComponentActivity() {
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return GamblingAppViewModel(UsersRepository(db)) as T
+                }
+            }
+        }
+    )
+
+    val context = this
+
+    private val loadingScreenViewModel by viewModels<LoadingScreenViewModel>(
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return LoadingScreenViewModel(LocalDataStoreManager(context = context)) as T
                 }
             }
         }
@@ -61,7 +75,7 @@ class MainActivity : ComponentActivity() {
                                 .calculateEndPadding(layoutDirection)
                         )
                 ) {
-                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel)
+                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel, loadingScreenViewModel = loadingScreenViewModel)
                 }
             }
         }
