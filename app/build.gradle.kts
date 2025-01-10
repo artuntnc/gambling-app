@@ -56,6 +56,8 @@ dependencies {
     implementation(libs.androidx.animation.graphics.android)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.media3.exoplayer)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

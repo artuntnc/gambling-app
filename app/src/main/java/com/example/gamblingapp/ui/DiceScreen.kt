@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 
 @Composable
@@ -41,6 +43,8 @@ fun DiceScreen(
     checkTextError: (String) -> Boolean,
     onDiceRollClick: () -> Unit,
     onDiceRollFinished: () -> Unit,
+    changeAIDice: (Int) -> Unit,
+    changePlayerDice: (Int) -> Unit,
     betText: String,
     lastResults: List<Float> = listOf(100f, 0f),
     diceCast: Boolean = false,
@@ -113,10 +117,22 @@ fun DiceScreen(
         {
             if(diceCast)
             {
+                val listOfAIDice = listOf(Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6))
+                val listOfPlayerDice = listOf(Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6))
 
+                var i: Int = 0
+                repeat(5)
+                {
+                    changeAIDice(i)
+                    delay(200)
+                    changePlayerDice(i)
+                    delay(200)
+                    i++
+                }
+
+                onDiceRollFinished()
             }
 
-            onDiceRollFinished()
         }
 
         Row(
@@ -126,20 +142,41 @@ fun DiceScreen(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = playerDiceId),
-                contentDescription = "Player Dice",
-                modifier = Modifier.size(100.dp)
-            )
-            Image(
-                painter = painterResource(id = aiDiceId),
-                contentDescription = "Computer Dice",
-                modifier = Modifier.size(100.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Player dice",
+                    color = Color.Black,
+                    fontSize = 14.sp,
+                    modifier = modifier
+                )
+                Image(
+                    painter = painterResource(id = playerDiceId),
+                    contentDescription = "Player Dice",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "AI dice",
+                    color = Color.Black,
+                    fontSize = 14.sp,
+                    modifier = modifier
+                )
+                Image(
+                    painter = painterResource(id = aiDiceId),
+                    contentDescription = "Computer Dice",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         }
 
         Text(
             text = resultMessage,
+            color = Color.Black,
             fontSize = 18.sp,
             modifier = modifier
                 .padding(24.dp))
@@ -162,7 +199,7 @@ fun DiceScreenPreview()
     {
         Surface()
         {
-            DiceScreen({},{false},{},{},"")
+            DiceScreen({},{false},{},{}, {},{},"")
         }
     }
 }

@@ -134,7 +134,7 @@ fun RouletteScreen(
             {
                 rotation.animateTo(
                     targetValue = targetDegree,
-                    animationSpec = tween(3600, easing = Ease)
+                    animationSpec = tween(3600, easing = LinearEasing)
                 ) {
                     onUpdateAngle(value)
                 }

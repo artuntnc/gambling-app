@@ -175,12 +175,12 @@ fun GamblingApp(
                                     coroutineScope.launch {
                                         if(gamblingAppViewModel.getUserData())
                                         {
-                                            gamblingAppViewModel.changeTopBarState()
                                             loadingScreenViewModel.saveUser(appState.email)
                                             navController.navigate(AppRoutes.GameMenu.name)
                                             {
                                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                             }
+                                            gamblingAppViewModel.changeTopBarState()
                                         }
                                         else
                                         {
@@ -207,12 +207,12 @@ fun GamblingApp(
                                         coroutineScope.launch {
                                             if(gamblingAppViewModel.setUserData())
                                             {
-                                                gamblingAppViewModel.changeTopBarState()
                                                 loadingScreenViewModel.saveUser(appState.email)
                                                 navController.navigate(AppRoutes.GameMenu.name)
                                                 {
                                                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                                 }
+                                                gamblingAppViewModel.changeTopBarState()
                                             }
                                             else
                                             {
@@ -307,21 +307,28 @@ fun GamblingApp(
                 }
                 composable(route = AppRoutes.Dice.name) {
                     DiceScreen(
-                        onBetChange = { bet -> gamblingAppViewModel.onDiceBetChange(bet)},
-                        checkTextError = { bet -> gamblingAppViewModel.checkIfInputIncorrect(bet, GamblingAppViewModel.inputType.Money) },
-                        onDiceRollClick = { gamblingAppViewModel.onDiceRollClick()},
+                        onBetChange = { bet -> gamblingAppViewModel.onDiceBetChange(bet) },
+                        checkTextError = { bet ->
+                            gamblingAppViewModel.checkIfInputIncorrect(
+                                bet,
+                                GamblingAppViewModel.inputType.Money
+                            )
+                        },
+                        onDiceRollClick = { gamblingAppViewModel.onDiceRollClick() },
                         onDiceRollFinished = {
-                                                coroutineScope.launch {
-                                                    gamblingAppViewModel.updateDiceState()
-                                                }
-                                             },
+                            coroutineScope.launch {
+                                gamblingAppViewModel.updateDiceState()
+                            }
+                        },
+                        changeAIDice = { newDice -> gamblingAppViewModel.updateAIDice(newDice) },
+                        changePlayerDice = { newDice -> gamblingAppViewModel.updatePlayerDice(newDice) },
                         betText = appState.chosenDiceBet,
                         lastResults = appState.lastDiceResults,
                         diceCast = appState.diceCast,
                         resultMessage = appState.diceResultMessage,
                         aiDiceId = appState.newAIDice,
                         playerDiceId = appState.newUserDice,
-                        modifier = Modifier
+                        modifier = Modifier,
                     )
                 }
                 composable(route = AppRoutes.Blackjack.name) {
@@ -385,9 +392,9 @@ fun GamblingApp(
                 }
                 composable(route = AppRoutes.Money.name) {
                     StoreScreen(
-                        onBuy1000Click = { },
-                        onBuy100Click = { },
-                        onBuyFreeClick = { },
+                        onBuy1000Click = { gamblingAppViewModel.get1000Coins() },
+                        onBuy100Click = { gamblingAppViewModel.get100Coins() },
+                        onBuyFreeClick = { gamblingAppViewModel.getFreeCoins() },
                         modifier = Modifier
                     )
                 }

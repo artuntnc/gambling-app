@@ -62,7 +62,7 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val comingSoonCopy = _appState.value.showComingSoonDialog
 
         _appState.update { currentState ->
-            currentState.copy(hideTopBar = !comingSoonCopy)
+            currentState.copy(showComingSoonDialog = !comingSoonCopy)
         }
     }
 
@@ -552,42 +552,12 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
             _appState.update { currentState ->
                 currentState.copy(diceCast = true)
             }
-
-            val id1 = when(Random.nextInt(6))
-            {
-                0 -> R.drawable.dice_1
-                1 -> R.drawable.dice_2
-                2 -> R.drawable.dice_3
-                3 -> R.drawable.dice_4
-                4 -> R.drawable.dice_5
-                5 -> R.drawable.dice_6
-                else -> R.drawable.dice_1
-            }
-
-            _appState.update { currentState ->
-                currentState.copy(newAIDice = id1)
-            }
-
-            val id2 = when(Random.nextInt(6))
-            {
-                0 -> R.drawable.dice_1
-                1 -> R.drawable.dice_2
-                2 -> R.drawable.dice_3
-                3 -> R.drawable.dice_4
-                4 -> R.drawable.dice_5
-                5 -> R.drawable.dice_6
-                else -> R.drawable.dice_1
-            }
-
-            _appState.update { currentState ->
-                currentState.copy(newUserDice = id2)
-            }
         }
     }
 
     suspend fun updateDiceState()
     {
-        val betAmount = _appState.value.chosenRouletteBet.toFloat()
+        val betAmount = _appState.value.chosenDiceBet.toFloat()
         val currentBalance = _appState.value.money
 
         val newPlayerDice = _appState.value.newUserDice
@@ -632,6 +602,40 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         }
     }
 
+    fun updateAIDice(newDice: Int)
+    {
+        val id = when(newDice)
+        {
+            0 -> R.drawable.dice_1
+            1 -> R.drawable.dice_2
+            2 -> R.drawable.dice_3
+            3 -> R.drawable.dice_4
+            4 -> R.drawable.dice_5
+            5 -> R.drawable.dice_6
+            else -> R.drawable.dice_1
+        }
+        _appState.update { currentState ->
+            currentState.copy(newAIDice = id)
+        }
+    }
+
+    fun updatePlayerDice(newDice: Int)
+    {
+        val id = when(newDice)
+        {
+            0 -> R.drawable.dice_1
+            1 -> R.drawable.dice_2
+            2 -> R.drawable.dice_3
+            3 -> R.drawable.dice_4
+            4 -> R.drawable.dice_5
+            5 -> R.drawable.dice_6
+            else -> R.drawable.dice_1
+        }
+        _appState.update { currentState ->
+            currentState.copy(newUserDice = id)
+        }
+    }
+
     //BLACKJACK FUNCTIONS
 
     fun onBlackjackBetChange(bet: String)
@@ -658,12 +662,27 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
 
             val playerHandTotal = calculateHandTotal(playerCards)
 
-            if (playerHandTotal > 21) {
+            if (playerHandTotal > 21)
+            {
                 _appState.update { currentState ->
                     currentState.copy(isGameOver = true)
                 }
                 _appState.update { currentState ->
                     currentState.copy(isBusted = true)
+                }
+
+                viewModelScope.launch {
+                    _appState.update { currentState ->
+                        currentState.copy(money = _appState.value.money - _appState.value.chosenBlackjackBet.toFloat())
+                    }
+                    saveBalance()
+                }
+
+                val lastFiveResults: MutableList<Float> = _appState.value.lastBlackjackResults.toMutableList()
+                lastFiveResults.add(0, 0f)
+                if (lastFiveResults.size > 5) lastFiveResults.removeAt(lastFiveResults.size - 1)
+                _appState.update { currentState ->
+                    currentState.copy(lastBlackjackResults = lastFiveResults)
                 }
             }
 
@@ -748,6 +767,8 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         _appState.update { currentState ->
             currentState.copy(isBusted = false)
         }
+
+
     }
 
     private fun drawCard(): Card
@@ -852,5 +873,40 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
     fun onSignOutClick()
     {
         //to do
+    }
+
+    //MONEY STORE
+    fun get1000Coins()
+    {
+        viewModelScope.launch {
+            val prevBalance = _appState.value.money
+
+            _appState.update { currentState ->
+                currentState.copy(money = prevBalance + 1000f)
+            }
+            saveBalance()
+        }
+    }
+    fun get100Coins()
+    {
+        viewModelScope.launch {
+            val prevBalance = _appState.value.money
+
+            _appState.update { currentState ->
+                currentState.copy(money = prevBalance + 100f)
+            }
+            saveBalance()
+        }
+    }
+    fun getFreeCoins()
+    {
+        viewModelScope.launch {
+            val prevBalance = _appState.value.money
+
+            _appState.update { currentState ->
+                currentState.copy(money = prevBalance + 50f)
+            }
+            saveBalance()
+        }
     }
 }
