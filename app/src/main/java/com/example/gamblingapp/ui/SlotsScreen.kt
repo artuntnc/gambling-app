@@ -1,8 +1,6 @@
 package com.example.gamblingapp.ui
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -26,6 +24,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,15 +58,9 @@ fun SlotsScreen(
     checkTextError: (String) -> Boolean,
     onSpinClick: () -> Unit,
     onSpinFinished: () -> Unit,
-    updateSpinningSlot: () -> Unit,
+    updateSpinningSlot: (Int) -> Unit,
     betText: String,
     slotsSpun: Boolean = false,
-    slot1BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
-    slot1EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
-    slot2BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
-    slot2EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
-    slot3BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
-    slot3EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
     startSlot1: Int = R.drawable.slot5bar,
     startSlot2: Int = R.drawable.slot5bar,
     startSlot3: Int = R.drawable.slot5bar,
@@ -134,83 +129,103 @@ fun SlotsScreen(
             }
         }
 
-        var jobs = mutableListOf<Job>()
+        val jobs1 = mutableListOf<Job>()
+        val jobs2 = mutableListOf<Job>()
+        val jobs3 = mutableListOf<Job>()
         val scope = rememberCoroutineScope()
+        val slot1BeginOffset by remember { mutableStateOf(Animatable(0f)) }
+        val slot1EndOffset by remember { mutableStateOf(Animatable(-300f)) }
+        val slot2BeginOffset by remember { mutableStateOf(Animatable(0f)) }
+        val slot2EndOffset by remember { mutableStateOf(Animatable(-300f)) }
+        val slot3BeginOffset by remember { mutableStateOf(Animatable(0f)) }
+        val slot3EndOffset by remember { mutableStateOf(Animatable(-300f)) }
         LaunchedEffect(slotsSpun)
         {
-            if (slotsSpun) {
-                jobs += scope.launch {
-                    slot1BeginOffset.animateTo(
-                        targetValue = 300f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut
-                        )
-                    )
-                }
-                jobs += scope.launch {
-                    slot1EndOffset.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut
-                        ),
-                    )
-                }
-            }
-
-            if (slotsSpun)
-            {
-                jobs += scope.launch {
-                    slot2BeginOffset.animateTo(
-                        targetValue = 300f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut,
-                            delayMillis = 1000
-                        )
-                    )
-                }
-                jobs += scope.launch {
-                    slot2EndOffset.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut,
-                            delayMillis = 1000
-                        )
-                    )
-                }
-            }
-
             if(slotsSpun)
             {
-                jobs += scope.launch {
-                    slot3BeginOffset.animateTo(
-                        targetValue = 300f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut,
-                            delayMillis = 2000
+                repeat(5)
+                {
+                    jobs1 += scope.launch {
+                        slot1BeginOffset.animateTo(
+                            targetValue = 300f,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = EaseOut
+                            )
                         )
-                    )
-                }
-                jobs += scope.launch {
-                    slot3EndOffset.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseIn,
-                            delayMillis = 2000
+                    }
+                    jobs1 += scope.launch {
+                        slot1EndOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = EaseOut
+                            ),
                         )
-                    )
+                    }
+                    jobs1.joinAll()
+                    jobs1.clear()
+                    updateSpinningSlot(1)
+                    slot1BeginOffset.snapTo(0f)
+                    slot1EndOffset.snapTo(-300f)
                 }
-
-                jobs.joinAll()
+                repeat(5)
+                {
+                    jobs2 += scope.launch {
+                        slot2BeginOffset.animateTo(
+                            targetValue = 300f,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = EaseOut
+                            )
+                        )
+                    }
+                    jobs2 += scope.launch {
+                        slot2EndOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = EaseOut
+                            )
+                        )
+                    }
+                    jobs2.joinAll()
+                    jobs2.clear()
+                    updateSpinningSlot(2)
+                    slot2BeginOffset.snapTo(0f)
+                    slot2EndOffset.snapTo(-300f)
+                }
+                repeat(5)
+                {
+                    jobs3 += scope.launch {
+                        slot3BeginOffset.animateTo(
+                            targetValue = 300f,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = EaseOut
+                            )
+                        )
+                    }
+                    jobs3 += scope.launch {
+                        slot3EndOffset.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = EaseOut
+                            )
+                        )
+                    }
+                    jobs3.joinAll()
+                    jobs3.clear()
+                    updateSpinningSlot(3)
+                    slot3BeginOffset.snapTo(0f)
+                    slot3EndOffset.snapTo(-300f)
+                }
 
                 onSpinFinished()
             }
         }
+
         Row(
             modifier = modifier
                 .padding(4.dp, top = 96.dp)

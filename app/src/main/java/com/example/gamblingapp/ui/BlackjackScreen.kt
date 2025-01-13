@@ -3,6 +3,9 @@ package com.example.gamblingapp.ui
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -128,28 +131,36 @@ fun BlackjackScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally)
         {
             Text(text = "Dealer's Cards", fontSize = 24.sp, color = Color.White)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp))
-            {
-                dealerCards.forEach { card ->
+
+            var first = true
+            LazyVerticalGrid(
+                columns = GridCells.FixedSize(100.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(dealerCards) { card ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(100.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = card.getImageResource()),
+                            painter = if((isPlayerTurn && !first) || !isPlayerTurn) painterResource(id = card.getImageResource()) else painterResource(id = R.drawable.cardbacksite),
                             contentDescription = "dealer card"
                         )
                     }
+                    first = false
                 }
             }
-            Text(
-                text = "Total: $dealerHandTotal",
-                fontSize = 20.sp,
-                color = Color.White,
-                modifier = modifier.padding(top = 2.dp)
-            )
-        }
 
+            if(!isPlayerTurn)
+            {
+                Text(
+                    text = "Total: $dealerHandTotal",
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    modifier = modifier.padding(top = 2.dp)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -157,12 +168,14 @@ fun BlackjackScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally)
         {
             Text(text = "Player's Cards", fontSize = 24.sp, color = Color.White)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp))
-            {
-                playerCards.forEach { card ->
+            LazyVerticalGrid(
+                columns = GridCells.FixedSize(100.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(playerCards) { card ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(100.dp)
                     ) {
                         Image(
                             painter = painterResource(id = card.getImageResource()),
@@ -171,6 +184,7 @@ fun BlackjackScreen(
                     }
                 }
             }
+
             Text(
                 text = "Total: $playerHandTotal",
                 fontSize = 20.sp, color = Color.White,

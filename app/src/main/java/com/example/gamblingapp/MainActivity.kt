@@ -19,12 +19,17 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.example.gamblingapp.data.GamblingDatabase
 import com.example.gamblingapp.data.LocalDataStoreManager
 import com.example.gamblingapp.data.UsersRepository
 import com.example.gamblingapp.ui.GamblingAppViewModel
 import com.example.gamblingapp.ui.LoadingScreenViewModel
+import com.example.gamblingapp.ui.LoadingScreenViewModelFactory
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,16 +51,8 @@ class MainActivity : ComponentActivity() {
     )
 
     val context = this
+    //val loadingScreenViewModel: LoadingScreenViewModel by viewModels()
 
-    private val loadingScreenViewModel by viewModels<LoadingScreenViewModel>(
-        factoryProducer = {
-            object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return LoadingScreenViewModel(LocalDataStoreManager(context = context)) as T
-                }
-            }
-        }
-    )
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class) //This will be important for making the app work on non-standard devices
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +72,7 @@ class MainActivity : ComponentActivity() {
                                 .calculateEndPadding(layoutDirection)
                         )
                 ) {
-                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel, loadingScreenViewModel = loadingScreenViewModel)
+                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel/*, loadingScreenViewModel = loadingScreenViewModel*/)
                 }
             }
         }

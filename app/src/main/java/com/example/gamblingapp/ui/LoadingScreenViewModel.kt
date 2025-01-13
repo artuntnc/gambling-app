@@ -2,6 +2,7 @@ package com.example.gamblingapp.ui
 
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.gamblingapp.data.GamblingAppState
 import com.example.gamblingapp.data.LoadingScreenState
@@ -103,5 +104,18 @@ class LoadingScreenViewModel(private val dataStore: LocalDataStoreManager) : Vie
         viewModelScope.launch {
             dataStore.saveIsAltThemeOn(altThemeOn)
         }
+    }
+}
+
+class LoadingScreenViewModelFactory(
+    private val dataStoreManager: LocalDataStoreManager
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(LoadingScreenViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return LoadingScreenViewModel(dataStoreManager) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

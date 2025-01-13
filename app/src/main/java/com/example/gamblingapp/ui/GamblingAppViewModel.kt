@@ -16,6 +16,7 @@ import com.example.gamblingapp.data.LoginState
 import com.example.gamblingapp.data.RegisterState
 import com.example.gamblingapp.data.User
 import com.example.gamblingapp.data.UsersRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -357,12 +358,44 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         }
     }
 
-    fun onUpdateSlot()
+    fun onUpdateSlot(slot: Int)
     {
-        val newSlot = (_appState.value.currentSlotSpinning+1)%3
+        val id = when(Random.nextInt(6))
+        {
+            0 -> R.drawable.slot1cherry
+            1 -> R.drawable.slot2orange
+            2 -> R.drawable.slot3purple
+            3 -> R.drawable.slot4bell
+            4 -> R.drawable.slot5bar
+            5 -> R.drawable.slot6seven
+            else -> R.drawable.slot1cherry
+        }
 
-        _appState.update { currentState ->
-            currentState.copy(currentSlotSpinning = newSlot)
+        when(slot){
+            1 -> {
+                _appState.update { currentState ->
+                    currentState.copy(slot1Id = _appState.value.nextSlot1Id)
+                }
+                _appState.update { currentState ->
+                    currentState.copy(nextSlot1Id = id)
+                }
+            }
+            2 -> {
+                _appState.update { currentState ->
+                    currentState.copy(slot2Id = _appState.value.nextSlot2Id)
+                }
+                _appState.update { currentState ->
+                    currentState.copy(nextSlot2Id = id)
+                }
+            }
+            3 -> {
+                _appState.update { currentState ->
+                    currentState.copy(slot3Id = _appState.value.nextSlot3Id)
+                }
+                _appState.update { currentState ->
+                    currentState.copy(nextSlot3Id = id)
+                }
+            }
         }
     }
 
@@ -385,10 +418,6 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
                 _appState.update { currentState ->
                     currentState.copy(slotsError = "Bet amount exceeds your current balance.")
                 }
-            }
-
-            _appState.update { currentState ->
-                currentState.copy(currentSlotSpinning = 0)
             }
 
             _appState.update { currentState ->
@@ -447,9 +476,9 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val betAmount = _appState.value.chosenSlotsBet.toFloat()
         val currentBalance = _appState.value.money
 
-        val result1 = _appState.value.nextSlot1Id
-        val result2 = _appState.value.nextSlot2Id
-        val result3 = _appState.value.nextSlot3Id
+        val result1 = _appState.value.slot1Id
+        val result2 = _appState.value.slot2Id
+        val result3 = _appState.value.slot3Id
 
         var reward = betAmount
 
@@ -475,37 +504,6 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
 
         _appState.update { currentState ->
             currentState.copy(slotsSpun = false)
-        }
-
-        _appState.update { currentState ->
-            currentState.copy(slot1Id = _appState.value.nextSlot1Id)
-        }
-
-        _appState.update { currentState ->
-            currentState.copy(slot2Id = _appState.value.nextSlot2Id)
-        }
-
-        _appState.update { currentState ->
-            currentState.copy(slot3Id = _appState.value.nextSlot3Id)
-        }
-
-        _appState.update { currentState ->
-            currentState.copy(slot1BeginOffset = Animatable(0f))
-        }
-        _appState.update { currentState ->
-            currentState.copy(slot1EndOffset = Animatable(-300f))
-        }
-        _appState.update { currentState ->
-            currentState.copy(slot2BeginOffset = Animatable(0f))
-        }
-        _appState.update { currentState ->
-            currentState.copy(slot2EndOffset = Animatable(-300f))
-        }
-        _appState.update { currentState ->
-            currentState.copy(slot3BeginOffset = Animatable(0f))
-        }
-        _appState.update { currentState ->
-            currentState.copy(slot3EndOffset = Animatable(-300f))
         }
 
         val lastFiveResults: MutableList<Float> = _appState.value.lastSlotsResults.toMutableList()
@@ -706,6 +704,7 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
 
             while (dealerHandTotal < 17) {
                 dealerCards.add(drawCard())
+                delay(500)
                 _appState.update { currentState ->
                     currentState.copy(dealerCards = dealerCards)
                 }

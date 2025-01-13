@@ -71,18 +71,6 @@ data class GamblingAppState(
     val chosenSlotsBet: String = "",
     //which slot to animate
     val currentSlotSpinning: Int  = 0,
-    //beginning offset for a slot 1
-    val slot1BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
-    //ending offset for a slot 1
-    val slot1EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
-    //beginning offset for a slot 2
-    val slot2BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
-    //ending offset for a slot 2
-    val slot2EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
-    //beginning offset for a slot 3
-    val slot3BeginOffset: Animatable<Float, AnimationVector1D> = Animatable(0f),
-    //ending offset for a slot 3
-    val slot3EndOffset: Animatable<Float, AnimationVector1D> = Animatable(-300f),
     //current slot 1
     val slot1Id: Int = R.drawable.slot1cherry,
     //current slot 2
@@ -95,6 +83,8 @@ data class GamblingAppState(
     val nextSlot2Id: Int = R.drawable.slot1cherry,
     //next slot 3
     val nextSlot3Id: Int = R.drawable.slot1cherry,
+    //animation delay
+    val delay: Int = 0,
 
     //last results in dice game
     val lastDiceResults: List<Float> = listOf(),

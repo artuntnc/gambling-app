@@ -117,15 +117,15 @@ fun DiceScreen(
         {
             if(diceCast)
             {
-                val listOfAIDice = listOf(Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6))
-                val listOfPlayerDice = listOf(Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6))
+                val listOfAIDice = listOf(Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6),Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6))
+                val listOfPlayerDice = listOf(Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6),Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6), Random.nextInt(6))
 
-                var i: Int = 0
-                repeat(5)
+                var i = 0
+                repeat(listOfPlayerDice.size)
                 {
-                    changeAIDice(i)
+                    changeAIDice(listOfAIDice[i])
                     delay(200)
-                    changePlayerDice(i)
+                    changePlayerDice(listOfPlayerDice[i])
                     delay(200)
                     i++
                 }
