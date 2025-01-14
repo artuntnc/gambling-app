@@ -1,29 +1,18 @@
 package com.example.gamblingapp.ui
 
+import android.media.MediaPlayer
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.Ease
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -31,6 +20,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -43,7 +33,6 @@ import androidx.compose.ui.unit.sp
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
-
 @Composable
 fun RouletteScreen(
     onBetChange: (String) -> Unit,
@@ -55,18 +44,29 @@ fun RouletteScreen(
     onUpdateAngle: (Float) -> Unit,
     onSpinFinished: () -> Unit,
     betText: String,
-    lastResults: List<Float> = listOf(100f, 0f,100f, 0f,100000f),
+    lastResults: List<Float> = listOf(100f, 0f, 100f, 0f, 100000f),
     rouletteSpun: Boolean = false,
     startDegree: Float = 0f,
     targetDegree: Float = 360f,
-    rotation: Animatable<Float,AnimationVector1D> = Animatable(0f),
+    rotation: Animatable<Float, AnimationVector1D> = Animatable(0f),
     modifier: Modifier = Modifier
 ) {
+    // Remember MediaPlayer for the spin sound
+    val context = LocalContext.current
+    val spinSoundPlayer = remember { MediaPlayer.create(context, R.raw.roulettespin) }
+
+    // Ensure MediaPlayer is released when composable is removed
+    DisposableEffect(Unit) {
+        onDispose {
+            spinSoundPlayer.release()
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .paint(
-                painterResource(id = R.drawable.gradient_roulette_background),
+                painterResource(id = R.drawable.maybethis),
                 contentScale = ContentScale.FillBounds
             )
             .padding(8.dp),
@@ -78,7 +78,7 @@ fun RouletteScreen(
         ) {
             TextField(
                 value = betText,
-                textStyle = TextStyle(color = Color.DarkGray, fontSize = 20.sp),
+                textStyle = TextStyle(color = Color(0xFFFFA500), fontSize = 20.sp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -100,7 +100,8 @@ fun RouletteScreen(
                 thickness = 1.dp,
                 modifier = modifier
                     .height(120.dp)
-                    .padding(2.dp))
+                    .padding(2.dp)
+            )
             Text(
                 stringResource(R.string.last_results),
                 color = Color.White,
@@ -112,10 +113,8 @@ fun RouletteScreen(
                 modifier = Modifier
                     .height(120.dp)
                     .weight(0.3f)
-            )
-            {
-                for (result in lastResults)
-                {
+            ) {
+                for (result in lastResults) {
                     Text(stringResource(R.string.result_money, result), color = Color.White, fontSize = 12.sp)
                 }
             }
@@ -128,10 +127,11 @@ fun RouletteScreen(
                 .size(32.dp)
         )
 
-        LaunchedEffect(rouletteSpun)
-        {
-            if(rouletteSpun)
-            {
+        LaunchedEffect(rouletteSpun) {
+            if (rouletteSpun) {
+                // Play the roulette spin sound
+                spinSoundPlayer.start()
+
                 rotation.animateTo(
                     targetValue = targetDegree,
                     animationSpec = tween(3600, easing = Ease)
@@ -139,6 +139,9 @@ fun RouletteScreen(
                     onUpdateAngle(value)
                 }
 
+                // Stop the sound and reset
+                spinSoundPlayer.stop()
+                spinSoundPlayer.prepare() // Reset for future plays
                 onSpinFinished()
             }
         }
@@ -161,7 +164,7 @@ fun RouletteScreen(
             Button(
                 onClick = onRedClick,
                 shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF800020)),
                 modifier = modifier
                     .weight(1f)
                     .padding(8.dp)
@@ -181,7 +184,7 @@ fun RouletteScreen(
             Button(
                 onClick = onGreenClick,
                 shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006400)),
                 modifier = modifier
                     .weight(1f)
                     .padding(8.dp)
@@ -190,7 +193,10 @@ fun RouletteScreen(
             }
         }
         Button(
-            onClick = onSpinClick,
+            onClick = {
+                onSpinClick()
+                spinSoundPlayer.start() // Play sound when spin starts
+            },
             shape = RectangleShape,
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
             modifier = modifier
@@ -201,16 +207,22 @@ fun RouletteScreen(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun RouletteScreenPreview()
-{
-    GamblingAppTheme()
-    {
-        Surface()
-        {
-            RouletteScreen({},{false},{},{},{},{},{},{},"1")
+fun RouletteScreenPreview() {
+    GamblingAppTheme {
+        Surface {
+            RouletteScreen(
+                onBetChange = {},
+                checkTextError = { false },
+                onRedClick = {},
+                onBlackClick = {},
+                onGreenClick = {},
+                onSpinClick = {},
+                onUpdateAngle = {},
+                onSpinFinished = {},
+                betText = "1"
+            )
         }
     }
 }

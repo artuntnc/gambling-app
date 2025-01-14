@@ -111,10 +111,7 @@ fun DiceScreen(
         //animation to do
         LaunchedEffect(diceCast)
         {
-            if(diceCast)
-            {
 
-            }
 
             onDiceRollFinished()
         }

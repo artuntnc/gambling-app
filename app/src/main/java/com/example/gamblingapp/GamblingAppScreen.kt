@@ -43,6 +43,7 @@ import com.example.gamblingapp.data.LocalDataStoreManager
 import com.example.gamblingapp.data.UsersRepository
 import com.example.gamblingapp.ui.BlackjackScreen
 import com.example.gamblingapp.ui.DiceScreen
+
 import com.example.gamblingapp.ui.GamblingAppViewModel
 import com.example.gamblingapp.ui.GameMenuScreen
 import com.example.gamblingapp.ui.LoadingScreen
@@ -127,7 +128,7 @@ fun GamblingApp(
     val registerState by gamblingAppViewModel.registerState.collectAsState()
 
     //media player
-    val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.smoke_lish_grooves)
+    val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.background_music)
     musicPlayer.isLooping = true
     musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
     musicPlayer.start()

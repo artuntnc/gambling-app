@@ -1,5 +1,6 @@
 package com.example.gamblingapp.ui
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,11 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +50,18 @@ fun GameMenuScreen(
     showComingSoon: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+
+    //Clicksound function on the gamemenu
+    val context = LocalContext.current
+    val playClickSound: () -> Unit = remember {
+        {
+            val mediaPlayer = MediaPlayer.create(context, R.raw.click_sound)
+            mediaPlayer.setOnCompletionListener { it.release() }
+            mediaPlayer.start()
+        }
+    }
+
+
     if(showComingSoon)
     {
         Dialog(onDismissRequest = { onDismissRequest() })
@@ -90,7 +105,10 @@ fun GameMenuScreen(
                 contentDescription = "roulette game",
                 modifier = modifier
                     .fillMaxSize()
-                    .clickable(onClick = onRouletteClick)
+                    .clickable{
+                        playClickSound()
+                        onRouletteClick()
+                    }
                     .padding(32.dp)
                     .size(160.dp)
                     .weight(1f)
@@ -101,7 +119,10 @@ fun GameMenuScreen(
                 contentDescription = "blackjack game",
                 modifier = modifier
                     .fillMaxSize()
-                    .clickable(onClick = onBlackjackClick)
+                    .clickable{
+                        playClickSound()
+                        onBlackjackClick()
+                    }
                     .padding(32.dp)
                     .size(160.dp)
                     .weight(1f)
@@ -117,7 +138,10 @@ fun GameMenuScreen(
                 contentDescription = "dice game",
                 modifier = modifier
                     .fillMaxSize()
-                    .clickable(onClick = onDiceClick)
+                    .clickable{
+                        playClickSound()
+                        onDiceClick()
+                    }
                     .padding(32.dp)
                     .size(160.dp)
                     .weight(1f)
@@ -128,7 +152,10 @@ fun GameMenuScreen(
                 contentDescription = "slots game",
                 modifier = modifier
                     .fillMaxSize()
-                    .clickable(onClick = onSlotsClick)
+                    .clickable{
+                        playClickSound()
+                        onDiceClick()
+                    }
                     .padding(32.dp)
                     .size(160.dp)
                     .weight(1f)
@@ -144,7 +171,10 @@ fun GameMenuScreen(
                 contentDescription = "coming soon",
                 modifier = modifier
                     .fillMaxSize()
-                    .clickable(onClick = onComingSoonClick)
+                    .clickable{
+                        playClickSound()
+                        onComingSoonClick()
+                    }
                     .padding(32.dp)
                     .size(160.dp)
                     .weight(1f)
@@ -155,7 +185,10 @@ fun GameMenuScreen(
                 contentDescription = "shop",
                 modifier = modifier
                     .fillMaxSize()
-                    .clickable(onClick = onShopClick)
+                    .clickable{
+                        playClickSound()
+                        onShopClick()
+                    }
                     .padding(32.dp)
                     .size(160.dp)
                     .weight(1f)

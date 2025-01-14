@@ -15,7 +15,7 @@
 
     <string name="loading_screen_progress">%s%%</string>
 
-    <string name="enter_bet">Enter Your bet:</string>
+    <string name="enter_bet">Enter bet:</string>
     <string name="last_results">Last results:</string>
     <string name="result_money">%s$</string>
 

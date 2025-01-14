@@ -50,6 +50,18 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
+fun generateRandomSlot(): Int {
+    val slotIcons = listOf(
+        R.drawable.slot1cherry,
+        R.drawable.slot2orange,
+        R.drawable.slot3purple,
+        R.drawable.slot4bell,
+        R.drawable.slot5bar,
+        R.drawable.slot6seven
+
+    )
+    return slotIcons.random()
+}
 
 @Composable
 fun SlotsScreen(
@@ -136,81 +148,45 @@ fun SlotsScreen(
 
         var jobs = mutableListOf<Job>()
         val scope = rememberCoroutineScope()
-        LaunchedEffect(slotsSpun)
-        {
+        LaunchedEffect(slotsSpun) {
             if (slotsSpun) {
+                val randomSlot1 = generateRandomSlot()
+                val randomSlot2 = generateRandomSlot()
+                val randomSlot3 = generateRandomSlot()
+
                 jobs += scope.launch {
                     slot1BeginOffset.animateTo(
                         targetValue = 300f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut
-                        )
+                        animationSpec = tween(durationMillis = 1000, easing = EaseOut)
                     )
+                    slot1EndOffset.snapTo(0f)
+                    onSpinFinished()
+                    updateSpinningSlot()
                 }
-                jobs += scope.launch {
-                    slot1EndOffset.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut
-                        ),
-                    )
-                }
-            }
 
-            if (slotsSpun)
-            {
                 jobs += scope.launch {
                     slot2BeginOffset.animateTo(
                         targetValue = 300f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut,
-                            delayMillis = 1000
-                        )
+                        animationSpec = tween(durationMillis = 1000, easing = EaseOut, delayMillis = 500)
                     )
+                    slot2EndOffset.snapTo(0f)
                 }
-                jobs += scope.launch {
-                    slot2EndOffset.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut,
-                            delayMillis = 1000
-                        )
-                    )
-                }
-            }
 
-            if(slotsSpun)
-            {
                 jobs += scope.launch {
                     slot3BeginOffset.animateTo(
                         targetValue = 300f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseOut,
-                            delayMillis = 2000
-                        )
+                        animationSpec = tween(durationMillis = 1000, easing = EaseOut, delayMillis = 1000)
                     )
-                }
-                jobs += scope.launch {
-                    slot3EndOffset.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(
-                            durationMillis = 1000,
-                            easing = EaseIn,
-                            delayMillis = 2000
-                        )
-                    )
+                    slot3EndOffset.snapTo(0f)
                 }
 
                 jobs.joinAll()
 
+
                 onSpinFinished()
             }
         }
+
         Row(
             modifier = modifier
                 .padding(4.dp, top = 96.dp)
