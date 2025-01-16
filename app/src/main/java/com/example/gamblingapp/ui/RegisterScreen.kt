@@ -61,7 +61,7 @@ fun RegisterScreen(
         modifier = modifier
             .fillMaxSize()
             .paint(
-                painterResource(id = R.drawable.siginbackground),
+                painterResource(id = R.drawable.signinnewbackground),
                 contentScale = ContentScale.FillBounds
             )
             .padding(top = 64.dp),

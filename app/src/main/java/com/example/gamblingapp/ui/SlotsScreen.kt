@@ -1,5 +1,6 @@
 package com.example.gamblingapp.ui
 
+import android.media.MediaPlayer
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
@@ -23,6 +24,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +37,7 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -70,6 +73,15 @@ fun SlotsScreen(
     lastResults: List<Float> = listOf(100f, 0f),
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val slotmachinesound = remember {MediaPlayer.create(context, R.raw.slotmachinesound)}
+
+    DisposableEffect(Unit) {
+        onDispose {
+            slotmachinesound.release()
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -80,6 +92,8 @@ fun SlotsScreen(
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+
         Row(
             modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
@@ -143,8 +157,11 @@ fun SlotsScreen(
         {
             if(slotsSpun)
             {
+
+                BackgroundMusicManager.pauseMusic()
+
                 repeat(5)
-                {
+                {   slotmachinesound.start()
                     jobs1 += scope.launch {
                         slot1BeginOffset.animateTo(
                             targetValue = 300f,
@@ -169,8 +186,9 @@ fun SlotsScreen(
                     slot1BeginOffset.snapTo(0f)
                     slot1EndOffset.snapTo(-300f)
                 }
+
                 repeat(5)
-                {
+                { slotmachinesound.start()
                     jobs2 += scope.launch {
                         slot2BeginOffset.animateTo(
                             targetValue = 300f,
@@ -196,7 +214,7 @@ fun SlotsScreen(
                     slot2EndOffset.snapTo(-300f)
                 }
                 repeat(5)
-                {
+                { slotmachinesound.start()
                     jobs3 += scope.launch {
                         slot3BeginOffset.animateTo(
                             targetValue = 300f,
@@ -221,8 +239,11 @@ fun SlotsScreen(
                     slot3BeginOffset.snapTo(0f)
                     slot3EndOffset.snapTo(-300f)
                 }
-
+                slotmachinesound.stop()
+                slotmachinesound.prepare()
                 onSpinFinished()
+
+                BackgroundMusicManager.playMusic()
             }
         }
 
@@ -328,7 +349,7 @@ fun SlotsScreen(
             modifier = modifier
                 .padding(32.dp)
         ) {
-            Text("SPIN!", fontWeight = FontWeight.Bold, color = Color.Green)
+            Text("SPIN!", fontWeight = FontWeight.Bold, color = Color(0xFF800080))
         }
     }
 }

@@ -28,7 +28,7 @@ data class Card(val suit: String, val value: String)
             "4_of_diamonds" -> R.drawable.four_of_diamonds
             "5_of_diamonds" -> R.drawable.five_of_diamonds
             "6_of_diamonds" -> R.drawable.six_of_diamonds
-            "7_of_diamond" -> R.drawable.seven_of_diamonds
+            "7_of_diamonds" -> R.drawable.seven_of_diamonds
             "8_of_diamonds"-> R.drawable.eight_of_diamonds
             "9_of_diamonds" -> R.drawable.nine_of_diamonds
             "10_of_diamonds" -> R.drawable.ten_of_diamonds

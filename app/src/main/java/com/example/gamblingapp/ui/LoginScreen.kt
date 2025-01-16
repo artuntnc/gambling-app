@@ -51,7 +51,7 @@ fun LoginScreen(
         modifier = modifier
             .fillMaxSize()
             .paint(
-                painterResource(id = R.drawable.siginbackground),
+                painterResource(id = R.drawable.signinnewbackground),
                 contentScale = ContentScale.FillBounds)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally

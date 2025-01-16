@@ -1,5 +1,6 @@
 package com.example.gamblingapp.ui
 
+import android.media.MediaPlayer
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.Ease
@@ -23,7 +24,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -31,6 +34,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -62,11 +66,22 @@ fun RouletteScreen(
     rotation: Animatable<Float,AnimationVector1D> = Animatable(0f),
     modifier: Modifier = Modifier
 ) {
+    
+    val context = LocalContext.current
+    val spinSoundPlayer = remember {MediaPlayer.create(context, R.raw.roulettespin)}
+
+    DisposableEffect(Unit) {
+        onDispose {
+            spinSoundPlayer.release()
+        }
+    }
+
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .paint(
-                painterResource(id = R.drawable.gradient_roulette_background),
+                painterResource(id = R.drawable.maybethis),
                 contentScale = ContentScale.FillBounds
             )
             .padding(8.dp),
@@ -78,7 +93,7 @@ fun RouletteScreen(
         ) {
             TextField(
                 value = betText,
-                textStyle = TextStyle(color = Color.DarkGray, fontSize = 20.sp),
+                textStyle = TextStyle(color = Color(0xFFFFA500), fontSize = 20.sp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -132,14 +147,20 @@ fun RouletteScreen(
         {
             if(rouletteSpun)
             {
+                BackgroundMusicManager.pauseMusic()
+                spinSoundPlayer.start()
                 rotation.animateTo(
                     targetValue = targetDegree,
                     animationSpec = tween(3600, easing = LinearEasing)
                 ) {
                     onUpdateAngle(value)
                 }
+                spinSoundPlayer.stop()
+                spinSoundPlayer.prepare()
+
 
                 onSpinFinished()
+                BackgroundMusicManager.playMusic()
             }
         }
         Image(
@@ -161,7 +182,7 @@ fun RouletteScreen(
             Button(
                 onClick = onRedClick,
                 shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF800020)),
                 modifier = modifier
                     .weight(1f)
                     .padding(8.dp)
@@ -181,7 +202,7 @@ fun RouletteScreen(
             Button(
                 onClick = onGreenClick,
                 shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                colors = ButtonDefaults.buttonColors(containerColor =Color(0xFF006400)),
                 modifier = modifier
                     .weight(1f)
                     .padding(8.dp)
@@ -190,7 +211,12 @@ fun RouletteScreen(
             }
         }
         Button(
-            onClick = onSpinClick,
+            onClick = {
+                onSpinClick()
+                spinSoundPlayer.start()
+
+
+            },
             shape = RectangleShape,
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
             modifier = modifier

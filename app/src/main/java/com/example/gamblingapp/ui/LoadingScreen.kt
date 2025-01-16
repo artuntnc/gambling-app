@@ -28,6 +28,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -64,7 +66,17 @@ fun LoadingScreen(
     onLoadingEnd: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     val loadingScreenState by loadingScreenViewModel.uiState.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        BackgroundMusicManager.initialize(context, R.raw.smoke_lish_grooves)
+        BackgroundMusicManager.playMusic()
+    }
+
+
 
     val colors = listOf(colorResource(R.color.loading_screen_gradient_start),
         colorResource(R.color.loading_screen_gradient_center),
@@ -123,7 +135,7 @@ fun LoadingScreen(
                 .fillMaxWidth(0.95f)
         )
         Text(
-            text = stringResource(R.string.loading_screen_progress, floor(loadingScreenState.progress*100).toString()),
+            text = stringResource(R.string.loading_screen_progress, floor(loadingScreenState.progress*100).toInt().toString()),
             modifier = modifier
                 .padding(8.dp)
         )

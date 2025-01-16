@@ -1,5 +1,6 @@
 package com.example.gamblingapp.ui
 
+import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -58,12 +59,19 @@ fun BlackjackScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val playHitSound: () -> Unit = remember {
+        {
+            val mediaPlayer = MediaPlayer.create(context, R.raw.hitsound)
+            mediaPlayer.setOnCompletionListener { it.release() }
+            mediaPlayer.start()
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .paint(
-                painterResource(id = R.drawable.blackjack_gradient),
+                painterResource(id = R.drawable.darkblue),
                 contentScale = ContentScale.FillBounds
             )
             .padding(8.dp),
@@ -75,7 +83,7 @@ fun BlackjackScreen(
         ) {
             TextField(
                 value = betText,
-                textStyle = TextStyle(color = Color.DarkGray, fontSize = 20.sp),
+                textStyle = TextStyle(color =Color(0xFFFFA500), fontSize = 20.sp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -200,7 +208,14 @@ fun BlackjackScreen(
         {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp))
             {
-                Button(onClick = onHitClick)
+
+                Button(
+                    onClick = {
+                        playHitSound()
+                        onHitClick()
+                    }
+
+                )
                 {
                     Text(text = "Hit")
                 }
