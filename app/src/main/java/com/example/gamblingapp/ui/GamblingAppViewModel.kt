@@ -49,6 +49,13 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         Money
     }
 
+    fun setEmail(email: String)
+    {
+        _appState.update { currentState ->
+            currentState.copy(email = email)
+        }
+    }
+
     fun changeTopBarState()
     {
         val hideTopBarCopy = _appState.value.hideTopBar
@@ -64,6 +71,42 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
 
         _appState.update { currentState ->
             currentState.copy(showComingSoonDialog = !comingSoonCopy)
+        }
+    }
+
+    fun changeIncorrectInputState()
+    {
+        val incorrectInputCopy = _appState.value.showIncorrectInputDialog
+
+        _appState.update { currentState ->
+            currentState.copy(showIncorrectInputDialog = !incorrectInputCopy)
+        }
+    }
+
+    fun changeIncorrectBetState()
+    {
+        val incorrectBetCopy = _appState.value.showIncorrectBetDialog
+
+        _appState.update { currentState ->
+            currentState.copy(showIncorrectBetDialog = !incorrectBetCopy)
+        }
+    }
+
+    fun changeUserNotExistState()
+    {
+        val userNotExistCopy = _appState.value.showUserNotExistDialog
+
+        _appState.update { currentState ->
+            currentState.copy(showUserNotExistDialog = !userNotExistCopy)
+        }
+    }
+
+    fun changeUserExistState()
+    {
+        val userExistCopy = _appState.value.showUserExistDialog
+
+        _appState.update { currentState ->
+            currentState.copy(showUserExistDialog = !userExistCopy)
         }
     }
 
@@ -142,10 +185,16 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val password = _loginState.value.password
 
         if(checkIfInputIncorrect(email, inputType.Email) || checkIfInputIncorrect(password, inputType.Password))
+        {
+            changeIncorrectInputState()
             return false
+        }
 
         if(!usersRepository.doesUserExist(email,password))
+        {
+            changeUserNotExistState()
             return false
+        }
 
         val userFlow = usersRepository.getUserStream(email,password)
 
@@ -167,13 +216,19 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         val fullName = _registerState.value.fullName
 
         if(checkIfInputIncorrect(email, inputType.Email) || checkIfInputIncorrect(password, inputType.Password) || checkIfInputIncorrect(birthDate, inputType.Date) || checkIfInputIncorrect(pesel, inputType.Pesel) || checkIfInputIncorrect(fullName, inputType.FullName))
+        {
+            changeIncorrectInputState()
             return false
+        }
 
         val emailExists = usersRepository.doesUserEmailExist(email)
         val peselExists = usersRepository.doesUserPeselExist(pesel)
 
         if(emailExists || peselExists)
+        {
+            changeUserExistState()
             return false
+        }
 
         _appState.update { currentState ->
             currentState.copy(username = fullName, email = email, money = 1000f)
@@ -293,6 +348,10 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
             _appState.update { currentState ->
                 currentState.copy(money = currentBalance - betAmount)
             }
+        }
+        else
+        {
+            changeIncorrectBetState()
         }
     }
 
@@ -469,6 +528,10 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
                 currentState.copy(nextSlot3Id = id3)
             }
         }
+        else
+        {
+            changeIncorrectBetState()
+        }
     }
 
     suspend fun updateSlotsState()
@@ -550,6 +613,13 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
             _appState.update { currentState ->
                 currentState.copy(diceCast = true)
             }
+            _appState.update { currentState ->
+                currentState.copy(diceResultMessage = "...")
+            }
+        }
+        else
+        {
+            changeIncorrectBetState()
         }
     }
 
@@ -754,6 +824,10 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
                 currentState.copy(dealerTotal = calculateHandTotal(_appState.value.dealerCards))
             }
         }
+        else
+        {
+            changeIncorrectBetState()
+        }
     }
 
     fun updateBlackjackState()
@@ -843,27 +917,33 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         }
 
     }
-    fun onSoundVolumeChange(newVolume: Float)
+    fun onSoundVolumeChange(newVolume: Float): Float
     {
         _appState.update { currentState ->
             currentState.copy(soundVolume = newVolume)
         }
+
+        return newVolume
     }
-    fun onNotificationsClick()
+    fun onNotificationsClick(): Boolean
     {
-        val prevNotif = _appState.value.areNotificationsOn
+        val prevNotif = !_appState.value.areNotificationsOn
 
         _appState.update { currentState ->
-            currentState.copy(areNotificationsOn = !prevNotif)
+            currentState.copy(areNotificationsOn = prevNotif)
         }
+
+        return prevNotif
     }
-    fun onThemesClick()
+    fun onThemesClick(): Boolean
     {
-        val prevTheme = _appState.value.altThemeOn
+        val prevTheme = !_appState.value.altThemeOn
 
         _appState.update { currentState ->
-            currentState.copy(altThemeOn = !prevTheme)
+            currentState.copy(altThemeOn = prevTheme)
         }
+
+        return prevTheme
     }
     fun onHelpClick()
     {

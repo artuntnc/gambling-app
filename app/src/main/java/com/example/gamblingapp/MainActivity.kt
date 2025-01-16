@@ -25,11 +25,12 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.example.gamblingapp.data.GamblingDatabase
+import com.example.gamblingapp.data.LocalDataDatabase
+import com.example.gamblingapp.data.LocalDataRepository
 import com.example.gamblingapp.data.LocalDataStoreManager
 import com.example.gamblingapp.data.UsersRepository
 import com.example.gamblingapp.ui.GamblingAppViewModel
 import com.example.gamblingapp.ui.LoadingScreenViewModel
-import com.example.gamblingapp.ui.LoadingScreenViewModelFactory
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -50,8 +51,22 @@ class MainActivity : ComponentActivity() {
         }
     )
 
-    val context = this
-    //val loadingScreenViewModel: LoadingScreenViewModel by viewModels()
+    private val ldb by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            LocalDataDatabase::class.java,
+            name = "local_database.db"
+        ).build()
+    }
+    private val loadingScreenViewModel by viewModels<LoadingScreenViewModel> (
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return LoadingScreenViewModel(LocalDataRepository(ldb)) as T
+                }
+            }
+        }
+    )
 
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class) //This will be important for making the app work on non-standard devices
@@ -72,7 +87,7 @@ class MainActivity : ComponentActivity() {
                                 .calculateEndPadding(layoutDirection)
                         )
                 ) {
-                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel/*, loadingScreenViewModel = loadingScreenViewModel*/)
+                    GamblingApp(context = this, gamblingAppViewModel = mainViewModel, loadingScreenViewModel = loadingScreenViewModel)
                 }
             }
         }

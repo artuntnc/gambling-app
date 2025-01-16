@@ -1,12 +1,11 @@
 package com.example.gamblingapp.ui
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.gamblingapp.data.GamblingAppState
 import com.example.gamblingapp.data.LoadingScreenState
-import com.example.gamblingapp.data.LocalDataStoreManager
+import com.example.gamblingapp.data.LocalData
+import com.example.gamblingapp.data.LocalDataRepository
 import com.example.gamblingapp.data.UsersRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoadingScreenViewModel(private val dataStore: LocalDataStoreManager) : ViewModel()
+class LoadingScreenViewModel (private val localData: LocalDataRepository) : ViewModel()
 {
     private val _uiState = MutableStateFlow(LoadingScreenState())
     val uiState: StateFlow<LoadingScreenState> = _uiState.asStateFlow()
@@ -25,11 +24,7 @@ class LoadingScreenViewModel(private val dataStore: LocalDataStoreManager) : Vie
     private val _appState = MutableStateFlow(GamblingAppState())
     val appState: StateFlow<GamblingAppState> = _appState.asStateFlow()
 
-    val email = dataStore.emailFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
-    val musicVolume = dataStore.volumeMusicFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.5f)
-    val soundVolume = dataStore.volumeSoundFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.5f)
-    val notificationsOn = dataStore.areNotificationsOnFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-    val altThemeOn = dataStore.isAltThemeOnFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    private var dataLoaded: Boolean = false
 
     //function sets up the progress and starts connection to the database
     init
@@ -38,23 +33,48 @@ class LoadingScreenViewModel(private val dataStore: LocalDataStoreManager) : Vie
         getUserData()
     }
 
+    fun getEmail(): String
+    {
+        return _appState.value.email
+    }
+
     //starts connection to the "server" (which we can simulate by having the app just wait and return locally stored data)
     private fun getUserData()
     {
         viewModelScope.launch {
-            val currentEmail = email.value
 
-            if(currentEmail != "")
+            if(localData.doesExist())
             {
+                val settingsFlow = localData.getLocalDataStream()
+                val settings = settingsFlow.first()
+
                 _appState.update { currentState ->
-                    currentState.copy(email = currentEmail,)
+                    currentState.copy(email = settings.email,)
+                }
+
+                _appState.update { currentState ->
+                    currentState.copy(
+                        soundVolume = settings.soundVolume,
+                        musicVolume = settings.musicVolume,
+                        areNotificationsOn = settings.areNotificationsOn,
+                        altThemeOn = settings.isAltThemeOn
+                    )
                 }
             }
-
-            _appState.update { currentState ->
-                currentState.copy(soundVolume = soundVolume.value, musicVolume = musicVolume.value, areNotificationsOn = notificationsOn.value, altThemeOn = altThemeOn.value)
+            else
+            {
+                localData.insertLocalData(
+                    LocalData(
+                        _appState.value.musicVolume,
+                        _appState.value.soundVolume,
+                        "",
+                        _appState.value.altThemeOn,
+                        _appState.value.areNotificationsOn
+                    )
+                )
             }
 
+            dataLoaded = true
         }
     }
 
@@ -66,48 +86,97 @@ class LoadingScreenViewModel(private val dataStore: LocalDataStoreManager) : Vie
             newProgress = _uiState.value.progress.plus(0.01f)
         }
         _uiState.value = LoadingScreenState(progress = newProgress)
-        if(newProgress >= 1.0f)
+        if(newProgress >= 1.0f && dataLoaded)
+        {
             return true
+        }
         return false
     }
 
     fun saveUser(email: String)
     {
         viewModelScope.launch {
-            dataStore.saveEmail(email)
+            val settingsFlow = localData.getLocalDataStream()
+            val settings = settingsFlow.first()
+
+            localData.deleteLocalData(
+                localData = settings
+            )
+
+            localData.insertLocalData(
+                LocalData(
+                    _appState.value.musicVolume,
+                    _appState.value.soundVolume,
+                    email,
+                    _appState.value.altThemeOn,
+                    _appState.value.areNotificationsOn
+                )
+            )
         }
     }
 
     fun saveMusicVolume(volume: Float)
     {
         viewModelScope.launch {
-            dataStore.saveMusicVolume(volume)
+            localData.updateLocalData(
+                LocalData(
+                    volume,
+                    _appState.value.soundVolume,
+                    _appState.value.email,
+                    _appState.value.altThemeOn,
+                    _appState.value.areNotificationsOn
+                )
+            )
         }
     }
 
     fun saveSoundVolume(volume: Float)
     {
         viewModelScope.launch {
-            dataStore.saveSoundVolume(volume)
+            localData.updateLocalData(
+                LocalData(
+                    _appState.value.musicVolume,
+                    volume,
+                    _appState.value.email,
+                    _appState.value.altThemeOn,
+                    _appState.value.areNotificationsOn
+                )
+            )
         }
     }
 
     fun saveNotifications(notificationsOn: Boolean)
     {
         viewModelScope.launch {
-            dataStore.saveAreNotificationsOn(notificationsOn)
+            localData.updateLocalData(
+                LocalData(
+                    _appState.value.musicVolume,
+                    _appState.value.soundVolume,
+                    _appState.value.email,
+                    _appState.value.altThemeOn,
+                    notificationsOn
+                )
+            )
         }
     }
 
     fun saveAltTheme(altThemeOn: Boolean)
     {
         viewModelScope.launch {
-            dataStore.saveIsAltThemeOn(altThemeOn)
+            localData.updateLocalData(
+                LocalData(
+                    _appState.value.musicVolume,
+                    _appState.value.soundVolume,
+                    _appState.value.email,
+                    altThemeOn,
+                    _appState.value.areNotificationsOn
+                )
+            )
         }
     }
 }
 
-class LoadingScreenViewModelFactory(
+/*class LoadingScreenViewModelFactory(
     private val dataStoreManager: LocalDataStoreManager
 ) : ViewModelProvider.Factory {
 
@@ -118,4 +187,4 @@ class LoadingScreenViewModelFactory(
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
-}
+}*/

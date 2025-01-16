@@ -3,6 +3,16 @@ package com.example.gamblingapp.data
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Delete
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.RoomDatabase
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -74,4 +84,58 @@ class LocalDataStoreManager (private val context: Context) {
         .map { preferences ->
             preferences[PreferencesKeys.ARE_NOTIFICATIONS_ON] ?: true
         }
+}
+
+@Entity(tableName = "localData")
+data class LocalData(
+    val musicVolume: Float,
+    val soundVolume: Float,
+    @PrimaryKey
+    val email: String,
+    val isAltThemeOn: Boolean,
+    val areNotificationsOn: Boolean
+)
+
+@Dao
+interface LocalDataDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(localData: LocalData)
+
+    @Update
+    suspend fun update(localData: LocalData)
+
+    @Delete
+    suspend fun delete(localData: LocalData)
+
+    @Query("SELECT * from localData")
+    fun getLocalData(): Flow<LocalData>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM localData)")
+    suspend fun doesExist(): Boolean
+}
+
+@Database(entities = [LocalData::class], version = 1, exportSchema = false)
+abstract class LocalDataDatabase : RoomDatabase() {
+    abstract val localDataDao: LocalDataDao
+}
+
+class LocalDataRepository(private val db : LocalDataDatabase) {
+    suspend fun insertLocalData(localData: LocalData)
+    {
+        db.localDataDao.insert(localData)
+    }
+
+    suspend fun updateLocalData(localData: LocalData)
+    {
+        db.localDataDao.update(localData)
+    }
+
+    suspend fun deleteLocalData(localData: LocalData)
+    {
+        db.localDataDao.delete(localData)
+    }
+
+    fun getLocalDataStream(): Flow<LocalData> = db.localDataDao.getLocalData()
+
+    suspend fun doesExist() = db.localDataDao.doesExist()
 }

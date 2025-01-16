@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,11 +31,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -41,6 +48,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gamblingapp.data.LocalDataStoreManager
 import com.example.gamblingapp.data.UsersRepository
+import com.example.gamblingapp.managers.BackgroundMusicManager
 import com.example.gamblingapp.ui.BlackjackScreen
 import com.example.gamblingapp.ui.DiceScreen
 import com.example.gamblingapp.ui.GamblingAppViewModel
@@ -127,10 +135,93 @@ fun GamblingApp(
     val registerState by gamblingAppViewModel.registerState.collectAsState()
 
     //media player
-    val musicPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.smoke_lish_grooves)
-    musicPlayer.isLooping = true
-    musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
-    musicPlayer.start()
+    BackgroundMusicManager.initialize(context, R.raw.smoke_lish_grooves)
+
+
+    if(appState.showIncorrectBetDialog)
+    {
+        Dialog(onDismissRequest = { gamblingAppViewModel.changeIncorrectBetState() })
+        {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = "Incorrect bet - value has to be larger than 0 and less than your balance!",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+    if(appState.showIncorrectInputDialog)
+    {
+        Dialog(onDismissRequest = { gamblingAppViewModel.changeIncorrectInputState() })
+        {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = "Incorrect input - try again!",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+    if(appState.showUserExistDialog)
+    {
+        Dialog(onDismissRequest = { gamblingAppViewModel.changeUserExistState() })
+        {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = "This user already exists!",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+    if(appState.showUserNotExistDialog)
+    {
+        Dialog(onDismissRequest = { gamblingAppViewModel.changeUserNotExistState() })
+        {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = "User does not exist or password incorrect!",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
 
     //main app component with a top bar and navigation
     Scaffold(
@@ -149,6 +240,7 @@ fun GamblingApp(
                 composable(route = AppRoutes.Loading.name) {
                     LoadingScreen(
                         onLoadingEnd = {
+                                            gamblingAppViewModel.setEmail(loadingScreenViewModel.getEmail())
                                             if(appState.email == "")
                                             {
                                                 navController.navigate(AppRoutes.Login.name)
@@ -175,7 +267,7 @@ fun GamblingApp(
                                     coroutineScope.launch {
                                         if(gamblingAppViewModel.getUserData())
                                         {
-                                            loadingScreenViewModel.saveUser(appState.email)
+                                            loadingScreenViewModel.saveUser(loginState.email)
                                             navController.navigate(AppRoutes.GameMenu.name)
                                             {
                                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
@@ -207,7 +299,7 @@ fun GamblingApp(
                                         coroutineScope.launch {
                                             if(gamblingAppViewModel.setUserData())
                                             {
-                                                loadingScreenViewModel.saveUser(appState.email)
+                                                loadingScreenViewModel.saveUser(registerState.email)
                                                 navController.navigate(AppRoutes.GameMenu.name)
                                                 {
                                                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
@@ -250,27 +342,25 @@ fun GamblingApp(
                     SettingsScreen(
                         onMusicVolumeChange = {
                                                     change -> gamblingAppViewModel.onMusicVolumeChange(change)
-                                                    musicPlayer.setVolume(appState.musicVolume,appState.musicVolume)
-                                                    loadingScreenViewModel.saveMusicVolume(appState.musicVolume)
+                                                    BackgroundMusicManager.setVolume(change)
+                                                    loadingScreenViewModel.saveMusicVolume(change)
                                               },
                         onSoundVolumeChange = {
                                                     change -> gamblingAppViewModel.onSoundVolumeChange(change)
-                                                    loadingScreenViewModel.saveSoundVolume(appState.soundVolume)},
+                                                    loadingScreenViewModel.saveSoundVolume(change)},
                         onAccountClick = { /*nav to account settings*/},
                         onNotificationsClick = {
-                                                    gamblingAppViewModel.onNotificationsClick()
-                                                    loadingScreenViewModel.saveNotifications(appState.areNotificationsOn)
+                                                    loadingScreenViewModel.saveNotifications(gamblingAppViewModel.onNotificationsClick())
                                                },
                         onThemesClick = {
-                                            gamblingAppViewModel.onThemesClick()
-                                            loadingScreenViewModel.saveAltTheme(appState.altThemeOn)
+                                            loadingScreenViewModel.saveAltTheme(gamblingAppViewModel.onThemesClick())
                                         },
                         onHelpClick = { gamblingAppViewModel.onHelpClick()},
                         onSignOutClick = {
                                             gamblingAppViewModel.changeTopBarState()
                                             gamblingAppViewModel.onSignOutClick()
                                             loadingScreenViewModel.saveUser("")
-                                            navController.navigate(AppRoutes.GameMenu.name)
+                                            navController.navigate(AppRoutes.Login.name)
                                             {
                                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                             }
@@ -371,6 +461,7 @@ fun GamblingApp(
                                                 gamblingAppViewModel.updateSlotsState()
                                             }
                                          },
+                        updateSpinningSlot = { slot -> gamblingAppViewModel.onUpdateSlot(slot) },
                         betText = appState.chosenSlotsBet,
                         slotsSpun = appState.slotsSpun,
                         startSlot1 = appState.slot1Id,
@@ -380,13 +471,6 @@ fun GamblingApp(
                         endSlot2 = appState.nextSlot2Id,
                         endSlot3 = appState.nextSlot3Id,
                         lastResults = appState.lastSlotsResults,
-                        updateSpinningSlot = { gamblingAppViewModel.onUpdateSlot() },
-                        slot1BeginOffset = appState.slot1BeginOffset,
-                        slot1EndOffset = appState.slot1EndOffset,
-                        slot2BeginOffset = appState.slot2BeginOffset,
-                        slot2EndOffset = appState.slot2EndOffset,
-                        slot3BeginOffset = appState.slot3BeginOffset,
-                        slot3EndOffset = appState.slot3EndOffset,
                         modifier = Modifier,
                     )
                 }

@@ -128,7 +128,10 @@ fun BlackjackScreen(
         )
 
         //Dealer's Cards
-        Column(horizontalAlignment = Alignment.CenterHorizontally)
+        Column(
+            modifier = modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        )
         {
             Text(text = "Dealer's Cards", fontSize = 24.sp, color = Color.White)
 

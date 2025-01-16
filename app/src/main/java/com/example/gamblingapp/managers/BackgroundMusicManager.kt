@@ -42,4 +42,9 @@ object BackgroundMusicManager {
         mediaPlayer = null
         Log.d("BackgroundMusicManager", "Music stopped and released")
     }
+
+    fun setVolume(volume: Float)
+    {
+        mediaPlayer?.setVolume(volume,volume)
+    }
 }

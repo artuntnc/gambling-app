@@ -39,6 +39,14 @@ data class GamblingAppState(
     val hideTopBar: Boolean = true,
     //bool for displaying coming soon pop-up
     val showComingSoonDialog: Boolean = false,
+    //bool for displaying incorrect bet pop-up
+    val showIncorrectBetDialog: Boolean = false,
+    //bool for displaying incorrect input pop-up
+    val showIncorrectInputDialog: Boolean = false,
+    //bool for displaying incorrect input pop-up
+    val showUserNotExistDialog: Boolean = false,
+    //bool for displaying incorrect input pop-up
+    val showUserExistDialog: Boolean = false,
 
     //last results in roulette game
     val lastRouletteResults: List<Float> = listOf(),
