@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gamblingapp.managers.BackgroundMusicManager
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 
@@ -160,7 +161,7 @@ fun RouletteScreen(
 
 
                 onSpinFinished()
-                BackgroundMusicManager.playMusic()
+                BackgroundMusicManager.stopMusic()
             }
         }
         Image(

@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -135,8 +136,10 @@ fun GamblingApp(
     val registerState by gamblingAppViewModel.registerState.collectAsState()
 
     //media player
-    BackgroundMusicManager.initialize(context, R.raw.smoke_lish_grooves)
-
+    LaunchedEffect(Unit) {
+        BackgroundMusicManager.initialize(context, R.raw.smoke_lish_grooves)
+        BackgroundMusicManager.playMusic()
+    }
 
     if(appState.showIncorrectBetDialog)
     {
@@ -241,6 +244,10 @@ fun GamblingApp(
                     LoadingScreen(
                         onLoadingEnd = {
                                             gamblingAppViewModel.setEmail(loadingScreenViewModel.getEmail())
+                                            gamblingAppViewModel.setTheme(loadingScreenViewModel.getTheme())
+                                            gamblingAppViewModel.setNotifications(loadingScreenViewModel.getNotifications())
+                                            gamblingAppViewModel.setSoundVolume(loadingScreenViewModel.getSoundVolume())
+                                            gamblingAppViewModel.setMusicVolume(loadingScreenViewModel.getMusicVolume())
                                             if(appState.email == "")
                                             {
                                                 navController.navigate(AppRoutes.Login.name)
@@ -249,6 +256,10 @@ fun GamblingApp(
                                             {
                                                 gamblingAppViewModel.getUserFromLocal()
                                                 navController.navigate(AppRoutes.GameMenu.name)
+                                                {
+                                                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                                }
+                                                gamblingAppViewModel.changeTopBarState()
                                             }
                                        },
                         loadingScreenViewModel = loadingScreenViewModel,

@@ -66,17 +66,7 @@ fun LoadingScreen(
     onLoadingEnd: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
     val loadingScreenState by loadingScreenViewModel.uiState.collectAsState()
-
-
-    LaunchedEffect(Unit) {
-        BackgroundMusicManager.initialize(context, R.raw.smoke_lish_grooves)
-        BackgroundMusicManager.playMusic()
-    }
-
-
 
     val colors = listOf(colorResource(R.color.loading_screen_gradient_start),
         colorResource(R.color.loading_screen_gradient_center),

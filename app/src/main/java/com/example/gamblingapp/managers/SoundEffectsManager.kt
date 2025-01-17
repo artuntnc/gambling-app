@@ -1,9 +1,9 @@
-    package com.example.gamblingapp
+    package com.example.gamblingapp.managers
 
     import android.content.Context
     import android.media.AudioAttributes
     import android.media.SoundPool
-    import com.example.gamblingapp.ui.BackgroundMusicManager
+    import com.example.gamblingapp.managers.BackgroundMusicManager
 
     class SoundEffectsManager(private val context: Context) {
         private val soundPool: SoundPool
@@ -26,17 +26,17 @@
             soundMap[effectName] = soundId
         }
 
-        fun playSound(effectName: String) {
+        fun playSound(effectName: String, volume: Float) {
             val soundId = soundMap[effectName]
             if (soundId != null) {
 
                 BackgroundMusicManager.pauseMusic()
 
                 soundPool.setOnLoadCompleteListener { _, _, _ ->
-                    soundPool.play(soundId, 1f, 1f, 1, 0, 1f)
+                    soundPool.play(soundId, volume, volume, 1, 0, 1f)
                 }
 
-                soundPool.play(soundId, 1f, 1f, 1, 0, 1f)
+                soundPool.play(soundId, volume, volume, 1, 0, 1f)
 
 
                 soundPool.setOnLoadCompleteListener { _, _, _ ->

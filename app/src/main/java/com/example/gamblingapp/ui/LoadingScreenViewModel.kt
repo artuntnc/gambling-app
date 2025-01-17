@@ -38,6 +38,24 @@ class LoadingScreenViewModel (private val localData: LocalDataRepository) : View
         return _appState.value.email
     }
 
+    fun getTheme(): Boolean
+    {
+        return _appState.value.altThemeOn
+    }
+
+    fun getNotifications(): Boolean
+    {
+        return _appState.value.areNotificationsOn
+    }
+    fun getSoundVolume(): Float
+    {
+        return _appState.value.soundVolume
+    }
+    fun getMusicVolume(): Float
+    {
+        return _appState.value.musicVolume
+    }
+
     //starts connection to the "server" (which we can simulate by having the app just wait and return locally stored data)
     private fun getUserData()
     {
@@ -83,14 +101,10 @@ class LoadingScreenViewModel (private val localData: LocalDataRepository) : View
         var newProgress = _uiState.value.progress
         if(newProgress < 1.0f)
         {
-            newProgress = _uiState.value.progress.plus(0.01f)
+            newProgress = _uiState.value.progress.plus(0.003f)
         }
         _uiState.value = LoadingScreenState(progress = newProgress)
-        if(newProgress >= 1.0f && dataLoaded)
-        {
-            return true
-        }
-        return false
+        return newProgress >= 1.0f && dataLoaded
     }
 
     fun saveUser(email: String)

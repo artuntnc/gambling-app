@@ -56,6 +56,32 @@ class GamblingAppViewModel(private val usersRepository: UsersRepository) : ViewM
         }
     }
 
+    fun setTheme(theme: Boolean)
+    {
+        _appState.update { currentState ->
+            currentState.copy(altThemeOn = theme)
+        }
+    }
+
+    fun setNotifications(notifications: Boolean)
+    {
+        _appState.update { currentState ->
+            currentState.copy(areNotificationsOn = notifications)
+        }
+    }
+    fun setSoundVolume(volume: Float)
+    {
+        _appState.update { currentState ->
+            currentState.copy(soundVolume = volume)
+        }
+    }
+    fun setMusicVolume(volume: Float)
+    {
+        _appState.update { currentState ->
+            currentState.copy(musicVolume = volume)
+        }
+    }
+
     fun changeTopBarState()
     {
         val hideTopBarCopy = _appState.value.hideTopBar

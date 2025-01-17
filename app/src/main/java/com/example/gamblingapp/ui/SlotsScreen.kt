@@ -48,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gamblingapp.managers.BackgroundMusicManager
 import com.example.gamblingapp.R
 import com.example.gamblingapp.ui.theme.GamblingAppTheme
 import kotlinx.coroutines.Job
@@ -74,11 +75,11 @@ fun SlotsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val slotmachinesound = remember {MediaPlayer.create(context, R.raw.slotmachinesound)}
+    val slotMachineSound = remember {MediaPlayer.create(context, R.raw.slotmachinesound)}
 
     DisposableEffect(Unit) {
         onDispose {
-            slotmachinesound.release()
+            slotMachineSound.release()
         }
     }
 
@@ -161,7 +162,7 @@ fun SlotsScreen(
                 BackgroundMusicManager.pauseMusic()
 
                 repeat(5)
-                {   slotmachinesound.start()
+                {   slotMachineSound.start()
                     jobs1 += scope.launch {
                         slot1BeginOffset.animateTo(
                             targetValue = 300f,
@@ -188,7 +189,7 @@ fun SlotsScreen(
                 }
 
                 repeat(5)
-                { slotmachinesound.start()
+                { slotMachineSound.start()
                     jobs2 += scope.launch {
                         slot2BeginOffset.animateTo(
                             targetValue = 300f,
@@ -214,7 +215,7 @@ fun SlotsScreen(
                     slot2EndOffset.snapTo(-300f)
                 }
                 repeat(5)
-                { slotmachinesound.start()
+                { slotMachineSound.start()
                     jobs3 += scope.launch {
                         slot3BeginOffset.animateTo(
                             targetValue = 300f,
@@ -239,8 +240,8 @@ fun SlotsScreen(
                     slot3BeginOffset.snapTo(0f)
                     slot3EndOffset.snapTo(-300f)
                 }
-                slotmachinesound.stop()
-                slotmachinesound.prepare()
+                slotMachineSound.stop()
+                slotMachineSound.prepare()
                 onSpinFinished()
 
                 BackgroundMusicManager.playMusic()
